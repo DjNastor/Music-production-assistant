@@ -22,10 +22,11 @@ npm run build
 
 - Responsive studio shell with desktop rail, mobile drawer, and mobile Copilot sheet
 - Playable arrangement energy ribbon with section selection and timeline progress
-- Project selection, navigation state, quick actions, work queue, and local feedback toasts
-- Local Copilot conversation with suggestion chips and contextual mock replies
-- Command palette with `Ctrl+K` / `Cmd+K`, keyboard navigation, and Escape dismissal
-- Export dialog with WAV, MP3, and stems preset selection
+- Project selection, navigation state, quick actions, filterable work queue, and local feedback toasts
+- Local Copilot conversation with suggestion chips, file context, Enter-to-send, and contextual mock replies
+- Command palette with `Ctrl+K` / `Cmd+K`, arrow-key navigation, Enter selection, and Escape dismissal
+- Project-link copying, local collaborator invites, and a keyboard-shortcut reference
+- Export dialog with WAV, MP3, and stems presets that add visible queue entries
 - Accessible focus states, semantic dialogs, reduced-motion support, and responsive layouts
 
 ## Mocked service boundaries
