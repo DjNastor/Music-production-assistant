@@ -8,3 +8,4 @@ npm-debug.log*
 .next-dev.*.log
 .DS_Store
 Gqumtha_Rebrand_Proposal.pdf
+.vercel
