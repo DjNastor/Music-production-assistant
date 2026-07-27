@@ -4,6 +4,10 @@ import Image from "next/image";
 import {
   Activity,
   AudioLines,
+  ArrowUpRight,
+  Mail,
+  ArrowUpRight,
+  Mail,
   BookOpenText,
   Bot,
   Check,
@@ -35,7 +39,6 @@ import {
   Share2,
   SlidersHorizontal,
   Sparkles,
-  SquareArrowOutUpRight,
   WandSparkles,
   X,
   Zap,
@@ -92,10 +95,42 @@ const projectContexts: ProjectContext[] = [
   { title: "TAHOE", parent: "Catalog project", genre: "Studio context", bpm: "—", musicalKey: "—", duration: "—", analysisAvailable: false },
 ];
 
-const catalogProjects = [
-  { title: "Faces", kicker: "Latest single", meta: "Released 19 Jun 2026", art: "art-faces", state: "Current" },
-  { title: "Digital Retro", kicker: "Album", meta: "DJ Nastor · Tahoe Studios", art: "art-retro", state: "2026" },
-  { title: "TAHOE", kicker: "Catalog project", meta: "Studio archive", art: "art-tahoe", state: "Context" },
+const releases = [
+  { title: "Faces", artist: "DJ Nastor", date: "19 JUN 2026", cat: "TPM 026", art: "art-faces", tracks: ["Faces (Original Mix)", "Faces (Dub Mix)"], project: "Faces", status: "OUT NOW" },
+  { title: "Find A Way", artist: "DJ Nastor", date: "07 MAY 2026", cat: "TPM 025", art: "art-retro", tracks: ["Find A Way (Extended Mix)", "Find A Way (Dub Version)"], project: "Find A Way", status: "FEATURED" },
+  { title: "Digital Retro", artist: "DJ Nastor", date: "22 FEB 2026", cat: "TPM 024", art: "art-tahoe", tracks: ["Digital Retro", "After The Rain", "Memory Lane"], project: "Digital Retro", status: "ALBUM" },
+];
+
+const roster = [
+  { name: "DJ Nastor", role: "Founder · Producer", note: "Afro House / Organic House" },
+  { name: "Tahoe Studios", role: "Production house", note: "Sound design · Engineering" },
+  { name: "Phushi Plan Music", role: "Publishing partner", note: "Independent electronic music" },
+];
+
+const labelNews = [
+  { date: "24 JUN 2026", title: "Faces enters the summer rotation", copy: "A percussion-led cut for long nights and open-air systems." },
+  { date: "12 JUN 2026", title: "Inside the Tahoe room", copy: "Notes on space, swing, and building movement without overfilling the mix." },
+  { date: "07 MAY 2026", title: "Find A Way — now playing", copy: "The featured single from the Digital Retro sessions is live across platforms." },
+];
+
+
+
+const releases = [
+  { title: "Faces", artist: "DJ Nastor", date: "19 JUN 2026", cat: "TPM 026", art: "art-faces", project: "Faces", tracks: ["Faces (Original Mix)", "Faces (Dub Mix)"], status: "OUT NOW" },
+  { title: "Find A Way", artist: "DJ Nastor", date: "07 MAY 2026", cat: "TPM 025", art: "art-retro", project: "Find A Way", tracks: ["Find A Way (Extended Mix)", "Find A Way (Dub Version)"], status: "FEATURED" },
+  { title: "Digital Retro", artist: "DJ Nastor", date: "22 FEB 2026", cat: "TPM 024", art: "art-tahoe", project: "Digital Retro", tracks: ["Digital Retro", "After The Rain", "Memory Lane"], status: "ALBUM" },
+];
+
+const roster = [
+  { name: "DJ Nastor", role: "Founder · Producer", note: "Afro House / Organic House" },
+  { name: "Tahoe Studios", role: "Production house", note: "Sound design · Engineering" },
+  { name: "Phushi Plan Music", role: "Publishing partner", note: "Independent electronic music" },
+];
+
+const labelNews = [
+  { date: "24 JUN 2026", title: "Faces enters the summer rotation", copy: "A percussion-led cut for long nights and open-air systems." },
+  { date: "12 JUN 2026", title: "Inside the Tahoe room", copy: "Notes on space, swing, and building movement without overfilling the mix." },
+  { date: "07 MAY 2026", title: "Find A Way — now playing", copy: "The featured single from the Digital Retro sessions is live across platforms." },
 ];
 
 const quickActions = [
@@ -308,6 +343,10 @@ export default function StudioPage() {
   const [exportPreset, setExportPreset] = useState("WAV · 24-bit");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [demoEmail, setDemoEmail] = useState("");
+  const [demoLink, setDemoLink] = useState("");
+  const [demoEmail, setDemoEmail] = useState("");
+  const [demoLink, setDemoLink] = useState("");
   const [collaboratorCount, setCollaboratorCount] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
@@ -351,6 +390,28 @@ export default function StudioPage() {
     const timeout = window.setTimeout(() => setToast(""), 3000);
     return () => window.clearTimeout(timeout);
   }, [toast]);
+
+  const submitDemo = (event: FormEvent) => {
+    event.preventDefault();
+    if (!demoEmail.trim() || !demoEmail.includes("@") || !demoLink.trim()) {
+      setToast("Add a valid email and private listening link");
+      return;
+    }
+    setDemoEmail("");
+    setDemoLink("");
+    setToast("Demo received — the label team will review it");
+  };
+
+  const submitDemo = (event: FormEvent) => {
+    event.preventDefault();
+    if (!demoEmail.trim() || !demoEmail.includes("@") || !demoLink.trim()) {
+      setToast("Add a valid email and private listening link");
+      return;
+    }
+    setDemoEmail("");
+    setDemoLink("");
+    setToast("Demo received — the label team will review it");
+  };
 
   const selectProject = (title: string) => {
     setPlaying(false);
@@ -448,15 +509,31 @@ export default function StudioPage() {
         <div className="canvas-scroll">
           <div className="canvas-inner">
             <Briefing context={context} activeNav={activeNav} />
+            <section className="label-intro" aria-labelledby="label-intro-title">
+              <div><span className="section-kicker">TAHOE PLAN MUSIC · INDEPENDENT ELECTRONIC LABEL</span><h2 id="label-intro-title">Rhythm with a point of view.</h2><p>Afro House, organic textures, and records made for movement. Explore the latest releases, meet the room behind the sound, and listen in full context.</p></div>
+              <div className="label-intro-meta"><span><i /> Based in Cape Town</span><span>EST. 2024</span><span>120 BPM / OPEN AIR</span></div>
+            </section>
+            <section className="release-section section-block" aria-labelledby="releases-title"><div className="section-heading release-heading"><div><span className="section-kicker">CATALOGUE · 2026</span><h2 id="releases-title">Latest releases</h2></div><button className="text-button" onClick={() => navigateTo("Projects")}>View full catalog <ArrowUpRight size={15} /></button></div><div className="release-grid">{releases.map((release, index) => <article className={`release-card ${index === 1 ? "featured" : ""}`} key={release.title}><div className={`release-cover ${release.art}`}><span className="release-index">0{index + 1}</span><span className="cover-groove" /><span className="cover-label">TAHOE<br />PLAN</span><button className="cover-play" aria-label={`Preview ${release.title}`} onClick={() => { selectProject(release.project); setPlaying(true); }}><Play size={16} fill="currentColor" /></button></div><div className="release-card-body"><div className="release-card-top"><span>{release.status}</span><small>{release.cat}</small></div><h3>{release.title}</h3><p className="release-artist">{release.artist}</p><div className="release-meta"><span>{release.date}</span><span>{release.tracks.length} TRACKS</span></div><ol className="track-snippet">{release.tracks.map((track, trackIndex) => <li key={track}><span>0{trackIndex + 1}</span>{track}</li>)}</ol><div className="release-actions"><button onClick={() => { selectProject(release.project); setPlaying(true); }}><Play size={13} fill="currentColor" /> Preview</button><a href={`https://www.google.com/search?q=${encodeURIComponent(`${release.artist} ${release.title}`)}`} target="_blank" rel="noreferrer">Buy / stream <ArrowUpRight size={13} /></a></div></div></article>)}</div></section>
+            <section className="label-intro" aria-labelledby="label-intro-title">
+              <div>
+                <span className="section-kicker">TAHOE PLAN MUSIC · INDEPENDENT ELECTRONIC LABEL</span>
+                <h2 id="label-intro-title">Rhythm with a point of view.</h2>
+                <p>Afro House, organic textures, and records made for movement. Explore the latest releases, meet the room behind the sound, and listen in full context.</p>
+              </div>
+              <div className="label-intro-meta"><span><i /> Based in Cape Town</span><span>EST. 2024</span><span>120 BPM / OPEN AIR</span></div>
+            </section>
             <div className="record-console">
               <Arrangement project={project} playing={playing} progress={progress} onPlay={() => setPlaying((value) => !value)} selected={selectedSection} onSelect={selectSection} onOptions={() => setToast(`${selectedSection} controls selected`)} onReturn={() => selectProject("Find A Way")} />
               <PhaseScope playing={playing} progress={progress} />
             </div>
 
-            <section className="catalog-section section-block" aria-labelledby="projects-title">
-              <div className="section-heading"><div><span className="section-kicker">Selected catalog</span><h2 id="projects-title">Records in reach</h2></div><button className="text-button" onClick={() => navigateTo("Projects")}>Open catalog <ChevronRight size={15} /></button></div>
-              <div className="project-list">
-                {catalogProjects.map((item, index) => <button key={item.title} className={`project-card ${activeProject === item.title ? "selected" : ""}`} onClick={() => selectProject(item.title)}><span className={`project-art ${item.art}`}><span className="art-index">0{index + 1}</span><span className="art-groove" /></span><span className="project-info"><span className="project-kicker">{item.kicker}</span><strong>{item.title}</strong><small>{item.meta}</small></span><span className="project-state">{item.state}</span><SquareArrowOutUpRight size={17} className="project-open" /></button>)}
+            <section className="release-section section-block" aria-labelledby="releases-title">
+              <div className="section-heading release-heading"><div><span className="section-kicker">CATALOGUE · 2026</span><h2 id="releases-title">Latest releases</h2></div><button className="text-button" onClick={() => navigateTo("Projects")}>View full catalog <ArrowUpRight size={15} /></button></div>
+              <div className="release-grid">
+                {releases.map((release, index) => <article className={`release-card ${index === 1 ? "featured" : ""}`} key={release.title}>
+                  <div className={`release-cover ${release.art}`}><span className="release-index">0{index + 1}</span><span className="cover-groove" /><span className="cover-label">TAHOE<br />PLAN</span><button className="cover-play" aria-label={`Preview ${release.title}`} onClick={() => { selectProject(release.project); setPlaying(true); }}><Play size={16} fill="currentColor" /></button></div>
+                  <div className="release-card-body"><div className="release-card-top"><span>{release.status}</span><small>{release.cat}</small></div><h3>{release.title}</h3><p className="release-artist">{release.artist}</p><div className="release-meta"><span>{release.date}</span><span>{release.tracks.length} TRACKS</span></div><ol className="track-snippet">{release.tracks.map((track, trackIndex) => <li key={track}><span>0{trackIndex + 1}</span>{track}</li>)}</ol><div className="release-actions"><button onClick={() => { selectProject(release.project); setPlaying(true); }}><Play size={13} fill="currentColor" /> Preview</button><a href={`https://www.google.com/search?q=${encodeURIComponent(`${release.artist} ${release.title}`)}`} target="_blank" rel="noreferrer">Buy / stream <ArrowUpRight size={13} /></a></div></div>
+                </article>)}
               </div>
             </section>
 
@@ -471,9 +548,18 @@ export default function StudioPage() {
                 <div className="queue-list">{visibleQueue.map((task) => { const QueueIcon = task.status === "processing" ? Activity : task.status === "complete" ? Check : Clock3; const label = task.status === "processing" ? "Processing" : task.status === "complete" ? "Ready" : "Waiting"; return <div className="queue-row" key={task.id}><span className={`queue-icon ${task.status}`}><QueueIcon size={16} /></span><span className="queue-copy"><strong>{task.title}</strong><small>{task.detail}</small></span><span className="queue-time">{task.time}</span><span className={`status-tag ${task.status}`}>{label}</span></div>; })}{!visibleQueue.length && <div className="queue-empty"><Check size={20} /><span>No active local tasks.</span></div>}</div>
               </section>
             </div>
+
+            <section className="label-modules" aria-label="Label information">
+              <div className="roster-module panel-shell"><div className="module-heading"><div><span className="section-kicker">THE HOUSE</span><h2>Artists & roster</h2></div><Music2 size={20} /></div>{roster.map((artist, index) => <button className="roster-row" key={artist.name} onClick={() => setToast(`${artist.name} profile selected`)}><span className="roster-number">0{index + 1}</span><span><strong>{artist.name}</strong><small>{artist.role} · {artist.note}</small></span><ArrowUpRight size={15} /></button>)}</div>
+              <div className="news-module panel-shell"><div className="module-heading"><div><span className="section-kicker">NOTES FROM THE ROOM</span><h2>News</h2></div><Radio size={20} /></div>{labelNews.map((item) => <button className="news-row" key={item.title} onClick={() => setToast(`${item.title} selected`)}><span>{item.date}</span><strong>{item.title}</strong><small>{item.copy}</small></button>)}</div>
+              <form className="demo-module panel-shell" onSubmit={submitDemo}><div className="module-heading"><div><span className="section-kicker">DEMO DROP</span><h2>Send the next record.</h2></div><Mail size={20} /></div><p>We listen for considered records with movement, space, and a strong point of view. Private links only, please.</p><label htmlFor="demo-email">Your email</label><input id="demo-email" type="email" placeholder="you@label.com" value={demoEmail} onChange={(event) => setDemoEmail(event.target.value)} /><label htmlFor="demo-link">Private listening link</label><input id="demo-link" type="url" placeholder="https://soundcloud.com/..." value={demoLink} onChange={(event) => setDemoLink(event.target.value)} /><button className="demo-submit" type="submit">Submit demo <ArrowUpRight size={15} /></button><small className="form-note">No attachments · One link per submission · We reply within 30 days</small></form>
+            </section>
+
           </div>
         </div>
       </section>
+
+      <section className="label-modules" aria-label="Label information"><div className="roster-module panel-shell"><div className="module-heading"><div><span className="section-kicker">THE HOUSE</span><h2>Artists & roster</h2></div><Music2 size={20} /></div>{roster.map((artist, index) => <button className="roster-row" key={artist.name} onClick={() => setToast(`${artist.name} profile selected`)}><span className="roster-number">0{index + 1}</span><span><strong>{artist.name}</strong><small>{artist.role} · {artist.note}</small></span><ArrowUpRight size={15} /></button>)}</div><div className="news-module panel-shell"><div className="module-heading"><div><span className="section-kicker">NOTES FROM THE ROOM</span><h2>News</h2></div><Radio size={20} /></div>{labelNews.map((item) => <button className="news-row" key={item.title} onClick={() => setToast(`${item.title} selected`)}><span>{item.date}</span><strong>{item.title}</strong><small>{item.copy}</small></button>)}</div><form className="demo-module panel-shell" onSubmit={submitDemo}><div className="module-heading"><div><span className="section-kicker">DEMO DROP</span><h2>Send the next record.</h2></div><Mail size={20} /></div><p>We listen for considered records with movement, space, and a strong point of view. Private links only, please.</p><label htmlFor="demo-email">Your email</label><input id="demo-email" type="email" placeholder="you@label.com" value={demoEmail} onChange={(event) => setDemoEmail(event.target.value)} /><label htmlFor="demo-link">Private listening link</label><input id="demo-link" type="url" placeholder="https://soundcloud.com/..." value={demoLink} onChange={(event) => setDemoLink(event.target.value)} /><button className="demo-submit" type="submit">Submit demo <ArrowUpRight size={15} /></button><small className="form-note">No attachments · One link per submission · We reply within 30 days</small></form></section>
 
       <Copilot project={project} messages={messages} value={input} setValue={setInput} onSubmit={sendMessage} onSuggestion={setInput} onOptions={() => setToast("Copilot is using local project and section context")} onAttach={attachProjectFile} attachedFile={attachedFile} />
       <button className="mobile-copilot-trigger" aria-label="Open Nastor Copilot" onClick={() => setMobileCopilot(true)}><Sparkles size={18} /><span>Copilot</span><i /></button>
