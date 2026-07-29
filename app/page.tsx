@@ -128,10 +128,10 @@ const labelNews = [
 
 
 const quickActions = [
-  { title: "Finish MP3 idea", copy: "Turn a rough bounce into a full production plan", icon: FileAudio },
-  { title: "Remix a song", copy: "Build a respectful new version from a full track", icon: Radio },
-  { title: "Open FLP session", copy: "Read project intent, missing parts and next moves", icon: FolderKanban },
-  { title: "Build version pack", copy: "Full, DJ, radio, instrumental and stemz", icon: AudioLines },
+  { title: "Finish MP3 idea", copy: "Upload rough bounce → full production plan", icon: FileAudio },
+  { title: "Remix a song", copy: "Upload full track → respectful remix plan", icon: Radio },
+  { title: "Open FLP session", copy: "Upload FLP zip → session audit", icon: FolderKanban },
+  { title: "Build version pack", copy: "Export full, DJ, radio and stemz", icon: AudioLines },
 ];
 
 const productionIntelligence = [
@@ -150,6 +150,25 @@ const deliveryVersions = [
   { name: "Dub / instrumental", target: "DJs / sync", length: "Track dependent", note: "Less vocal, more groove, usable for sets and licensing." },
   { name: "Stemz", target: "Remix / mix engineer", length: "Matched to master", note: "Drums, bass, music, vocal, FX and reference master." },
 ];
+
+
+const userFlowInputs = [
+  { type: "MP3 idea", accepts: "MP3 / WAV / voice note", output: "Finished production plan", prompt: "Upload a rough bounce and ask: finish this into a full Nastor record." },
+  { type: "Full song", accepts: "Master / demo / reference", output: "Remix map + stemz", prompt: "Upload a full track and ask: create respectful remix versions." },
+  { type: "FLP project", accepts: ".flp / zipped project / samples", output: "Session audit", prompt: "Upload the FLP zip and ask: find missing parts and next production moves." },
+  { type: "Stems", accepts: "Drums / bass / music / vocal / FX", output: "Mix and version pack", prompt: "Upload stems and ask: build full, DJ, radio and dub versions." },
+];
+
+const userFlowSteps = [
+  { step: "01", title: "Drop the source", detail: "Choose MP3 idea, full song, FLP zip, stems or remix reference. The assistant creates a project session and keeps the original safe." },
+  { step: "02", title: "Analyze the music", detail: "Detect tempo, key, sections, energy, groove, loudness, hook moments, missing files, plugin risks and stem groups." },
+  { step: "03", title: "Choose the mission", detail: "Finish idea, remix song, continue production, audit FLP, clean mix, separate stemz, or build a release pack." },
+  { step: "04", title: "Get producer decisions", detail: "Receive exact next moves: add bass, remove percussion, extend intro, shorten break, automate FX, rework hook, fix low-end or export stems." },
+  { step: "05", title: "Generate versions", detail: "Create full version, DJ extended, radio edit, dub, instrumental, acapella/clean if available, social cut and grouped stemz." },
+  { step: "06", title: "Deliver release pack", detail: "Download masters, previews, stemz, remix notes, FLP handoff notes, metadata and a version manifest for labels/DJs." },
+];
+
+const userFlowOutputs = ["Production brief", "Arrangement map", "Remix plan", "FLP audit", "Mix notes", "Stemz zip", "DJ extended", "Radio edit", "Master checklist"];
 
 
 const backendModules = [
@@ -499,6 +518,33 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   </section>;
 }
 
+
+function UploadReleaseFlow({ onAsk, onExport }: { onAsk: (prompt: string) => void; onExport: () => void }) {
+  return (
+    <section className="user-flow-panel" aria-labelledby="user-flow-title">
+      <header>
+        <div>
+          <span className="section-kicker">User flow · upload to release</span>
+          <h2 id="user-flow-title">One path for every Nastor session.</h2>
+          <p>Whether the source is an MP3 idea, FLP project, full song, remix reference or stemz, the assistant should guide the same clear route: ingest, analyze, decide, produce, version and deliver.</p>
+        </div>
+        <button onClick={() => onAsk("Create the exact user journey for uploading an MP3, FLP, remix source or stems, including screens, states, errors, progress messages, outputs and download actions.")}>Map UX states <ArrowUpRight size={15} /></button>
+      </header>
+      <div className="flow-input-grid">
+        {userFlowInputs.map((input) => <button key={input.type} onClick={() => onAsk(`${input.type} user flow: ${input.prompt} Include upload requirements, analysis steps, production decisions and final exports.`)}><span>{input.accepts}</span><strong>{input.type}</strong><small>{input.output}</small></button>)}
+      </div>
+      <ol className="flow-steps">
+        {userFlowSteps.map((item) => <li key={item.step}><span>{item.step}</span><strong>{item.title}</strong><p>{item.detail}</p></li>)}
+      </ol>
+      <div className="flow-output-strip">
+        <div><span className="section-kicker">Outputs</span><strong>What Nastor gets back</strong></div>
+        <div>{userFlowOutputs.map((output) => <em key={output}>{output}</em>)}</div>
+        <button onClick={onExport}>Open delivery options <Download size={15} /></button>
+      </div>
+    </section>
+  );
+}
+
 function BackendPlan({ onAsk }: { onAsk: (prompt: string) => void }) {
   return <section className="backend-plan" aria-labelledby="backend-plan-title"><header><div><span className="section-kicker">Real backend plan · build path</span><h2 id="backend-plan-title">Make the assistant actually produce.</h2><p>The prototype needs a backend that can ingest audio and DAW projects, analyze them, queue heavy jobs, run generation engines, and deliver release packs without pretending the browser can do everything alone.</p></div><button onClick={() => onAsk("Turn this backend roadmap into implementation tickets: upload API, storage, queue, analysis workers, FLP audit, stem separation, remix/version generation, mastering/export and permissions.")}>Create build tickets <Command size={15} /></button></header><div className="backend-grid">{backendRoadmap.map((step) => <article key={step.phase}><span>{step.phase}</span><strong>{step.title}</strong><small>{step.stack}</small><p>{step.copy}</p></article>)}</div><div className="backend-guards"><strong>Safety and rights rules</strong><ul>{backendGuards.map((guard) => <li key={guard}>{guard}</li>)}</ul></div></section>;
 }
@@ -788,6 +834,7 @@ export default function StudioPage() {
             <Briefing context={context} activeNav={activeNav} />
             <LaunchRail onLaunch={(cue, name) => { setInput(cue); setActiveNav("AI Assistant"); setToast(`${name} brief loaded into Copilot`); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onOpenStudio={() => navigateTo("Studio")} />
             <ProductionBrain onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production intelligence loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
+            <UploadReleaseFlow onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("User flow loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
             <BackendPlan onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Backend build plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production question loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <section className="label-intro" aria-labelledby="label-intro-title">
