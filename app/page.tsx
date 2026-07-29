@@ -120,6 +120,12 @@ const quickActions = [
   { title: "Prepare club master", copy: "Check translation and dynamics", icon: Gauge },
 ];
 
+const launchTemplates = [
+  { name: "Afro House", meta: "120 BPM · A MIN", cue: "Build an Afro House foundation with patient low end, organic percussion, and a clear eight-bar question-and-answer phrase." },
+  { name: "Amapiano", meta: "112 BPM · F# MIN", cue: "Sketch an Amapiano groove with a restrained log drum, open piano space, and a lift into bar seven." },
+  { name: "Hip-Hop", meta: "92 BPM · D MIN", cue: "Start a Hip-Hop pocket with swung drums, one memorable sample gesture, and space for a vocal lead." },
+];
+
 const sections = [
   { name: "Intro", start: 0, end: 12, color: "var(--oxide-light)" },
   { name: "Foundation", start: 12, end: 34, color: "var(--copper)" },
@@ -136,7 +142,7 @@ const waveform = Array.from({ length: 96 }, (_, index) => {
 });
 
 const navContext: Record<string, { eyebrow: string; title: string; copy: string }> = {
-  Home: { eyebrow: "Digital Retro · control room", title: "The record is in motion.", copy: "Find A Way is open at the arrangement desk. Hold the Afro House pulse, clear the break, and make the final arrival earn its weight." },
+  Home: { eyebrow: "Make the first move", title: "Your next track starts with direction.", copy: "Choose a groove, shape eight useful bars, and carry the same production intent from the first pattern to the final master." },
   Studio: { eyebrow: "Active session · Tahoe Studios", title: "Listen like an engineer.", copy: "Shape the energy curve first. Mix decisions become easier when every section has a clear job." },
   Projects: { eyebrow: "Catalog desk", title: "One artist. Several rooms.", copy: "Move between DJ Nastor, Tahoe Studios, Phushi Plan Music, and Lukulu Recordings without losing the session thread." },
   Library: { eyebrow: "Source library", title: "Keep the palette intentional.", copy: "References, stems, notes, and production context stay close to the active record." },
@@ -214,6 +220,14 @@ function Briefing({ context, activeNav }: { context: { eyebrow: string; title: s
       </div>
     </section>
   );
+}
+
+function LaunchRail({ onLaunch, onOpenStudio }: { onLaunch: (cue: string, name: string) => void; onOpenStudio: () => void }) {
+  const steps = [1,0,0,0,1,0,1,0,1,0,0,1,1,0,1,0];
+  return <section className="launch-rail" aria-labelledby="launch-title">
+    <div className="launch-copy"><span className="launch-badge"><i /> Browser sketch · local prototype</span><h2 id="launch-title">Start with the next <em>eight bars.</em></h2><p>Choose a direction and Nastor turns it into a focused production brief. Build the idea in your DAW, then return for arrangement, mix, and delivery guidance.</p><div className="launch-actions">{launchTemplates.map((item) => <button key={item.name} onClick={() => onLaunch(item.cue, item.name)}><span>{item.name}</span><small>{item.meta}</small><ChevronRight size={15} /></button>)}</div></div>
+    <div className="launch-machine" aria-label="Eight-bar groove preview"><header><span>NASTOR / LAUNCH RAIL</span><button onClick={onOpenStudio}>Open studio <ArrowUpRight size={13} /></button></header><div className="rail-readout"><strong>8 BAR IDEA</strong><span>120.00</span><span>A MIN</span><span>4 / 4</span></div><div className="step-grid" aria-hidden="true">{steps.map((active,index) => <i key={index} className={`${active ? "active" : ""} ${index % 4 === 0 ? "bar" : ""}`} />)}</div><div className="signal-lanes" aria-hidden="true"><div><span>KICK</span><b style={{width:"86%"}} /></div><div><span>PERC</span><b style={{width:"68%"}} /></div><div><span>VOICE</span><b style={{width:"43%"}} /></div></div><footer><span><i /> READY FOR DIRECTION</span><small>Reason 14 · DAW-neutral guidance</small></footer></div>
+  </section>;
 }
 
 function PhaseScope({ playing, progress }: { playing: boolean; progress: number }) {
@@ -476,6 +490,7 @@ export default function StudioPage() {
         <div className="canvas-scroll">
           <div className="canvas-inner">
             <Briefing context={context} activeNav={activeNav} />
+            <LaunchRail onLaunch={(cue, name) => { setInput(cue); setActiveNav("AI Assistant"); setToast(`${name} brief loaded into Copilot`); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onOpenStudio={() => navigateTo("Studio")} />
             <section className="label-intro" aria-labelledby="label-intro-title">
               <div>
                 <span className="section-kicker">TAHOE PLAN MUSIC · INDEPENDENT ELECTRONIC LABEL</span>
