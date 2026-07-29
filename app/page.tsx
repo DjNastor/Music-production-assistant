@@ -238,20 +238,21 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   const channelNames = ["Foundation kick", "Shaker pocket", "Log drum", "Vocal air"];
   const devices = ["Kong", "Dr. Octo Rex", "Mimic", "Grain"];
   const defaultSteps = [
-    [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
-    [0,0,.72,0,0,.58,0,.86,0,0,.74,0,0,.62,0,.9],
-    [0,0,0,0,0,0,.92,0,0,0,0,.82,0,0,.64,0],
-    [0,0,0,0,0,0,0,0,0,.5,0,0,0,0,0,.66],
+    [3,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0],
+    [0,0,2,0,0,1,0,2,0,0,2,0,0,1,0,2],
+    [0,0,0,0,0,0,3,0,0,0,0,2,0,0,1,0],
+    [0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1],
   ];
-  const presets = [
-    { name: "Afro House starter", bpm: 120, swing: 38, steps: defaultSteps },
-    { name: "Amapiano log answer", bpm: 113, swing: 44, steps: [[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],[0,.48,0,.62,0,.7,0,.58,0,.54,0,.78,0,.64,0,.82],[0,0,0,.7,0,0,.96,0,0,.62,0,0,.88,0,.72,0],[0,0,0,0,0,.42,0,0,0,0,0,.52,0,0,0,.44]] },
-    { name: "Hip-Hop half-time", bpm: 92, swing: 24, steps: [[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],[0,0,.72,0,0,.54,0,.68,0,0,.74,0,0,.56,0,.82],[0,0,0,0,.86,0,0,0,0,0,0,0,.78,0,0,0],[0,0,0,.48,0,0,0,0,0,0,0,.58,0,0,.42,0]] },
-  ];
-  type PatternState = { steps: number[][]; bpm: number; swing: number; muted: boolean[]; solo: number | null };
-  const normalizeStep = (value: number) => value > 0 ? Math.max(.35, Math.min(1, Number(value))) : 0;
-  const cloneSteps = (value: number[][]) => value.map((row) => row.map(normalizeStep));
-  const [steps, setSteps] = useState(cloneSteps(defaultSteps));
+  const presetLibrary = {
+    "Afro house": defaultSteps,
+    "Amapiano log": [[3,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0],[0,1,0,2,0,1,0,2,0,1,0,2,0,1,0,2],[0,0,0,0,0,0,3,0,0,2,0,0,0,0,3,0],[0,0,0,1,0,0,0,0,0,0,2,0,0,0,0,1]],
+    "Hip-hop swing": [[3,0,0,0,0,0,2,0,3,0,0,0,0,0,2,0],[0,0,1,0,0,2,0,0,0,0,1,0,0,2,0,0],[0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0],[0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,0]],
+  } satisfies Record<string, number[][]>;
+  type PatternState = { steps: number[][]; bpm: number; swing: number; muted: boolean[]; solo: number | null; activePreset: string };
+  const normalizeStep = (value: number) => value > 2 ? 3 : value > 1 ? 2 : value > 0 ? 1 : 0;
+  const normalizeGrid = (value: number[][]) => value.map((row) => row.map(normalizeStep));
+  const cloneSteps = (value: number[][]) => value.map((row) => [...row]);
+  const [steps, setSteps] = useState(defaultSteps);
   const [selected, setSelected] = useState(1);
   const [deskPlaying, setDeskPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -260,53 +261,54 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   const [swing, setSwing] = useState(38);
   const [muted, setMuted] = useState([false, false, false, false]);
   const [solo, setSolo] = useState<number | null>(null);
+  const [activePreset, setActivePreset] = useState("Afro house");
   const [history, setHistory] = useState<PatternState[]>([]);
   const [future, setFuture] = useState<PatternState[]>([]);
-  const [activePreset, setActivePreset] = useState("Afro House starter");
   const importRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<AudioContext | null>(null);
 
-  const snapshot = (): PatternState => ({ steps: cloneSteps(steps), bpm, swing, muted: [...muted], solo });
-  const restore = (state: PatternState) => { setSteps(cloneSteps(state.steps)); setBpm(state.bpm); setSwing(state.swing); setMuted([...state.muted]); setSolo(state.solo); };
+  const snapshot = (): PatternState => ({ steps: cloneSteps(steps), bpm, swing, muted: [...muted], solo, activePreset });
+  const restore = (state: PatternState) => { setSteps(normalizeGrid(state.steps)); setBpm(state.bpm); setSwing(state.swing); setMuted([...state.muted]); setSolo(state.solo); setActivePreset(state.activePreset || "Custom"); };
   const checkpoint = () => { setHistory((items) => [...items.slice(-24), snapshot()]); setFuture([]); };
   const undo = () => { const previous = history.at(-1); if (!previous) return; setFuture((items) => [snapshot(), ...items].slice(0, 25)); restore(previous); setHistory((items) => items.slice(0, -1)); };
   const redo = () => { const next = future[0]; if (!next) return; setHistory((items) => [...items.slice(-24), snapshot()]); restore(next); setFuture((items) => items.slice(1)); };
-  const toggleStep = (channel: number, step: number) => { checkpoint(); setSteps((current) => current.map((row, rowIndex) => rowIndex === channel ? row.map((value, stepIndex) => stepIndex === step ? (value === 0 ? .68 : value < .85 ? 1 : 0) : value) : row)); };
+  const changeSteps = (producer: (current: number[][]) => number[][], preset = "Custom") => { checkpoint(); setSteps((current) => normalizeGrid(producer(cloneSteps(current)))); setActivePreset(preset); };
+  const toggleStep = (channel: number, step: number) => changeSteps((current) => current.map((row, rowIndex) => rowIndex === channel ? row.map((value, stepIndex) => stepIndex === step ? (value + 1) % 4 : value) : row));
   const toggleMute = (channel: number) => { checkpoint(); setMuted((items) => items.map((value, index) => index === channel ? !value : value)); };
   const toggleSolo = (channel: number) => { checkpoint(); setSolo((value) => value === channel ? null : channel); };
   const updateBpm = (value: number) => setBpm(Math.max(70, Math.min(150, value)));
-  const applyPreset = (name: string) => { const preset = presets.find((item) => item.name === name); if (!preset) return; checkpoint(); setActivePreset(preset.name); setSteps(cloneSteps(preset.steps)); setBpm(preset.bpm); setSwing(preset.swing); setMuted([false,false,false,false]); setSolo(null); };
-  const clearChannel = () => { checkpoint(); setSteps((current) => current.map((row, index) => index === selected ? row.map(() => 0) : row)); };
-  const duplicateChannel = () => { checkpoint(); setSteps((current) => current.map((row, index) => index === (selected + 1) % current.length ? [...current[selected]] : row)); setSelected((selected + 1) % 4); };
-  const humanizeChannel = () => { checkpoint(); setSteps((current) => current.map((row, index) => index === selected ? row.map((value, step) => value ? Math.max(.42, Math.min(1, value + (((step * 37) % 9) - 4) / 50)) : 0) : row)); };
-  const generateVariation = () => { checkpoint(); setSteps((current) => current.map((row, channel) => row.map((value, step) => {
-    if (channel === 0) return [0,4,8,12].includes(step) ? Math.max(value, .92) : 0;
-    if (channel === 1 && [3,7,10,15].includes(step)) return value ? 0 : .72;
-    if (channel === 2 && [6,11,14].includes(step)) return value ? Math.max(.55, value - .18) : .78;
-    if (channel === 3 && [5,9,13,15].includes(step)) return value ? 0 : .48;
+  const applyPreset = (name: keyof typeof presetLibrary) => changeSteps(() => cloneSteps(presetLibrary[name]), name);
+  const clearChannel = () => changeSteps((current) => current.map((row, index) => index === selected ? row.map(() => 0) : row));
+  const duplicateChannel = () => changeSteps((current) => current.map((row, index) => index === selected ? [...current[(selected + 3) % 4]] : row));
+  const humanize = () => changeSteps((current) => current.map((row, channel) => row.map((value, index) => value && index % 4 !== 0 && (channel + index) % 5 === 0 ? Math.max(1, value - 1) : value)));
+  const createVariation = () => changeSteps((current) => current.map((row, channel) => row.map((value, index) => {
+    if (channel === 0) return [0,4,8,12].includes(index) ? Math.max(value, 3) : 0;
+    if (channel === 1 && [3,7,11,15].includes(index)) return value ? Math.max(1, value - 1) : 1;
+    if (channel === 2 && [6,10,14].includes(index)) return index === 10 ? 2 : value;
+    if (channel === 3 && index === 13) return value ? 0 : 1;
     return value;
-  }))); };
+  })));
 
   useEffect(() => {
     const hydrate = window.setTimeout(() => {
       try {
-        const saved = window.localStorage.getItem("nastor-pattern-v3");
-        const legacy = saved ?? window.localStorage.getItem("nastor-pattern-v2");
-        if (!legacy) return;
-        const data = JSON.parse(legacy) as Partial<PatternState>;
-        if (Array.isArray(data.steps) && data.steps.length === 4 && data.steps.every((row) => Array.isArray(row) && row.length === 16)) setSteps(cloneSteps(data.steps));
+        const saved = window.localStorage.getItem("nastor-pattern-v3") ?? window.localStorage.getItem("nastor-pattern-v2");
+        if (!saved) return;
+        const data = JSON.parse(saved) as Partial<PatternState>;
+        if (Array.isArray(data.steps) && data.steps.length === 4 && data.steps.every((row) => Array.isArray(row) && row.length === 16)) setSteps(normalizeGrid(data.steps));
         if (typeof data.bpm === "number") updateBpm(data.bpm);
         if (typeof data.swing === "number") setSwing(Math.max(0, Math.min(70, data.swing)));
         if (Array.isArray(data.muted) && data.muted.length === 4) setMuted(data.muted.map(Boolean));
         if (data.solo === null || (typeof data.solo === "number" && data.solo >= 0 && data.solo < 4)) setSolo(data.solo);
+        if (typeof data.activePreset === "string") setActivePreset(data.activePreset);
       } catch { window.localStorage.removeItem("nastor-pattern-v3"); }
     }, 0);
     return () => window.clearTimeout(hydrate);
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("nastor-pattern-v3", JSON.stringify({ steps, bpm, swing, muted, solo }));
-  }, [steps, bpm, swing, muted, solo]);
+    window.localStorage.setItem("nastor-pattern-v3", JSON.stringify({ steps, bpm, swing, muted, solo, activePreset }));
+  }, [steps, bpm, swing, muted, solo, activePreset]);
 
   useEffect(() => {
     if (!deskPlaying) return;
@@ -319,7 +321,7 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
     const output = context.createGain(); output.gain.value = 0.34; output.connect(context.destination);
     const tone = (channel: number, time: number, velocity: number) => {
       if (muted[channel] || (solo !== null && solo !== channel)) return;
-      const level = Math.max(.35, velocity);
+      const level = [0, .45, .72, 1][velocity] ?? 1;
       if (channel === 0) {
         const oscillator = context.createOscillator(); const gain = context.createGain(); oscillator.type = "sine"; oscillator.frequency.setValueAtTime(145, time); oscillator.frequency.exponentialRampToValueAtTime(48, time + .11); gain.gain.setValueAtTime(.9 * level, time); gain.gain.exponentialRampToValueAtTime(.001, time + .2); oscillator.connect(gain).connect(output); oscillator.start(time); oscillator.stop(time + .21);
       } else if (channel === 1) {
@@ -341,30 +343,33 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   const analysis = useMemo(() => {
     const hits = steps.map((row) => row.filter(Boolean).length);
     const total = hits.reduce((sum, value) => sum + value, 0);
-    const averageVelocity = total ? Math.round(steps.flat().reduce((sum, value) => sum + value, 0) / total * 100) : 0;
+    const accents = steps.flat().filter((value) => value === 3).length;
+    const ghostNotes = steps.flat().filter((value) => value === 1).length;
     const offbeats = steps.flatMap((row) => row.filter((value, index) => value && index % 4 !== 0)).length;
     const anchorHits = [0,4,8,12].filter((index) => steps[0][index]).length;
     const collisions = Array.from({ length: 16 }, (_, index) => steps.filter((row) => row[index]).length).filter((value) => value >= 3).length;
-    const ghostNotes = steps.flat().filter((value) => value > 0 && value < .7).length;
     const density = Math.round(total / 64 * 100);
     const syncopation = total ? Math.round(offbeats / total * 100) : 0;
+    const dynamics = total ? Math.round((accents + ghostNotes) / total * 100) : 0;
     const space = Math.max(0, 100 - density - collisions * 5);
-    const score = Math.max(0, Math.min(100, Math.round(anchorHits * 12 + Math.min(syncopation, 35) + space * .24 + Math.min(ghostNotes * 2, 12))));
-    const advice = anchorHits < 4 ? "Restore the four anchor beats before adding more movement." : ghostNotes < 3 ? "Add softer ghost notes to make the loop feel less grid-stiff." : collisions > 2 ? "Several moments stack three or more voices. Remove one hit at the busiest step." : hits[1] > 7 ? "The shaker is carrying too many events. Remove one late offbeat to create breath." : hits[2] < 2 ? "The low melodic answer is too rare to establish a phrase. Add one response after beat three." : "The pattern has a stable anchor, useful ghost notes, and negative space. Create a B variation next.";
-    return { hits, density, syncopation, space: Math.round(space), score, advice, averageVelocity, ghostNotes };
+    const score = Math.max(0, Math.min(100, Math.round(anchorHits * 12 + Math.min(syncopation, 35) + space * .24 + dynamics * .14)));
+    const advice = anchorHits < 4 ? "Restore the four anchor beats before adding more movement." : collisions > 2 ? "Several moments stack three or more voices. Use Clear or lower velocities at the busiest step." : ghostNotes < 3 ? "Add two ghost notes to the shaker or vocal-air lane for a more human loop." : hits[2] < 2 ? "The low melodic answer is too rare to establish a phrase. Add one response after beat three." : "The pattern has useful accents and negative space. Try Variation to create a B phrase.";
+    return { hits, density, syncopation, dynamics, space: Math.round(space), score, advice };
   }, [steps]);
 
-  const exportPattern = () => { const blob = new Blob([JSON.stringify({ version: 3, name: activePreset, ...snapshot() }, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "nastor-pattern-v3.json"; link.click(); URL.revokeObjectURL(url); };
-  const importPattern = (event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(String(reader.result)) as PatternState; if (!Array.isArray(data.steps) || data.steps.length !== 4 || !data.steps.every((row) => Array.isArray(row) && row.length === 16)) throw new Error("Invalid pattern"); checkpoint(); restore({ steps: cloneSteps(data.steps), bpm: Math.max(70, Math.min(150, Number(data.bpm) || 120)), swing: Math.max(0, Math.min(70, Number(data.swing) || 0)), muted: Array.isArray(data.muted) && data.muted.length === 4 ? data.muted.map(Boolean) : [false,false,false,false], solo: typeof data.solo === "number" ? data.solo : null }); setActivePreset("Imported pattern"); } catch { onAsk("The imported pattern file was invalid. Explain the expected Nastor pattern format."); } }; reader.readAsText(file); event.target.value = ""; };
-  const reset = () => { checkpoint(); setSteps(cloneSteps(defaultSteps)); setBpm(120); setSwing(38); setMuted([false,false,false,false]); setSolo(null); setActivePreset("Afro House starter"); };
+  const exportPattern = () => { const blob = new Blob([JSON.stringify({ version: 3, name: "Nastor Pattern 01", ...snapshot() }, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "nastor-pattern-01.json"; link.click(); URL.revokeObjectURL(url); };
+  const importPattern = (event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(String(reader.result)) as PatternState; if (!Array.isArray(data.steps) || data.steps.length !== 4 || !data.steps.every((row) => Array.isArray(row) && row.length === 16)) throw new Error("Invalid pattern"); checkpoint(); restore({ steps: normalizeGrid(data.steps), bpm: Math.max(70, Math.min(150, Number(data.bpm) || 120)), swing: Math.max(0, Math.min(70, Number(data.swing) || 0)), muted: Array.isArray(data.muted) && data.muted.length === 4 ? data.muted.map(Boolean) : [false,false,false,false], solo: typeof data.solo === "number" ? data.solo : null, activePreset: data.activePreset || "Imported" }); } catch { onAsk("The imported pattern file was invalid. Explain the expected Nastor pattern format."); } }; reader.readAsText(file); event.target.value = ""; };
+  const reset = () => { checkpoint(); setSteps(cloneSteps(defaultSteps)); setBpm(120); setSwing(38); setMuted([false,false,false,false]); setSolo(null); setActivePreset("Afro house"); };
+  const stepLabel = (value: number) => value === 3 ? "accent" : value === 2 ? "normal hit" : value === 1 ? "ghost hit" : "empty";
 
   return <section className="pattern-desk" aria-labelledby="pattern-desk-title">
-    <header className="desk-top"><div><span className="section-kicker">Pattern desk · velocity studio tools</span><h2 id="pattern-desk-title">Build the pocket before the playlist.</h2></div><div className="desk-tools"><button onClick={undo} disabled={!history.length} aria-label="Undo pattern edit"><Undo2 size={14} /></button><button onClick={redo} disabled={!future.length} aria-label="Redo pattern edit"><Redo2 size={14} /></button><button onClick={() => importRef.current?.click()} aria-label="Import pattern"><Upload size={14} /></button><button onClick={exportPattern} aria-label="Export pattern"><Download size={14} /></button><input ref={importRef} className="sr-only" type="file" accept="application/json,.json" onChange={importPattern} /><div className="desk-transport"><button aria-label={deskPlaying ? "Pause pattern" : "Play pattern"} onClick={() => setDeskPlaying((value) => { if (value) setCurrentStep(-1); return !value; })}>{deskPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}</button><label><span>BPM</span><input aria-label="Pattern tempo" type="number" min="70" max="150" value={bpm} onChange={(event) => updateBpm(Number(event.target.value))} /></label><small>{activePreset.toUpperCase()}</small></div></div></header>
-    <div className="intelligence-bar"><div><span>Groove score</span><strong>{analysis.score}</strong></div><div><span>Velocity</span><strong>{analysis.averageVelocity}%</strong></div><div><span>Ghosts</span><strong>{analysis.ghostNotes}</strong></div><div><span>Space</span><strong>{analysis.space}%</strong></div><p><Sparkles size={13} /> {analysis.advice}</p></div>
+    <header className="desk-top"><div><span className="section-kicker">Pattern desk · studio workflow tools</span><h2 id="pattern-desk-title">Build the pocket before the playlist.</h2></div><div className="desk-tools"><button onClick={undo} disabled={!history.length} aria-label="Undo pattern edit"><Undo2 size={14} /></button><button onClick={redo} disabled={!future.length} aria-label="Redo pattern edit"><Redo2 size={14} /></button><button onClick={() => importRef.current?.click()} aria-label="Import pattern"><Upload size={14} /></button><button onClick={exportPattern} aria-label="Export pattern"><Download size={14} /></button><input ref={importRef} className="sr-only" type="file" accept="application/json,.json" onChange={importPattern} /><div className="desk-transport"><button aria-label={deskPlaying ? "Pause pattern" : "Play pattern"} onClick={() => setDeskPlaying((value) => { if (value) setCurrentStep(-1); return !value; })}>{deskPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}</button><label><span>BPM</span><input aria-label="Pattern tempo" type="number" min="70" max="150" value={bpm} onChange={(event) => updateBpm(Number(event.target.value))} /></label><small>{activePreset.toUpperCase()}</small></div></div></header>
+    <div className="intelligence-bar"><div><span>Groove score</span><strong>{analysis.score}</strong></div><div><span>Density</span><strong>{analysis.density}%</strong></div><div><span>Syncopation</span><strong>{analysis.syncopation}%</strong></div><div><span>Dynamics</span><strong>{analysis.dynamics}%</strong></div><p><Sparkles size={13} /> {analysis.advice}</p></div>
+    <div className="pattern-toolbelt" aria-label="Pattern tools"><div className="preset-buttons">{(Object.keys(presetLibrary) as Array<keyof typeof presetLibrary>).map((name) => <button className={activePreset === name ? "active" : ""} key={name} onClick={() => applyPreset(name)}>{name}</button>)}</div><div className="edit-buttons"><button onClick={createVariation}><WandSparkles size={12} /> Variation</button><button onClick={humanize}><SlidersHorizontal size={12} /> Humanize</button><button onClick={duplicateChannel}>Copy prev → selected</button><button onClick={clearChannel}>Clear selected</button></div></div>
     <div className="desk-body">
-      <aside className="sound-browser" aria-label="Sound browser"><div className="browser-search"><Search size={13} /><span>Find a starting sound</span></div><div className="browser-tabs">{["Sounds","Devices","Presets","Lessons"].map((tab) => <button className={browserTab === tab ? "active" : ""} key={tab} onClick={() => setBrowserTab(tab)}>{tab}</button>)}</div><div className="browser-list">{browserTab === "Sounds" && ["Cape Town drums","Organic percussion","Log drum studies","Vocal textures"].map((item,index) => <button key={item} onClick={() => setSelected(index)}><span className={`browser-dot tone-${index}`} /><span>{item}<small>{index + 8} sources</small></span><Plus size={12} /></button>)}{browserTab === "Devices" && ["Kong drum designer","Dr. Octo Rex","Mimic sampler","Grain texture"].map((item,index) => <button key={item} onClick={() => setSelected(index)}><span className="browser-dot device" /><span>{item}<small>Browser instrument</small></span><Plus size={12} /></button>)}{browserTab === "Presets" && presets.map((preset) => <button key={preset.name} onClick={() => applyPreset(preset.name)}><span className="browser-dot lesson" /><span>{preset.name}<small>{preset.bpm} BPM · {preset.swing}% swing</small></span><ChevronRight size={12} /></button>)}{browserTab === "Lessons" && ["Design the pocket","Use call and response","Open the break","Prepare the drop"].map((item) => <button key={item} onClick={() => onAsk(`Teach me how to ${item.toLowerCase()} using this pattern. Current groove score: ${analysis.score}, average velocity ${analysis.averageVelocity}%, ghost notes ${analysis.ghostNotes}.`)}><span className="browser-dot lesson" /><span>{item}<small>Guided move</small></span><ChevronRight size={12} /></button>)}</div><div className="swing-control"><label htmlFor="pattern-swing">Swing <strong>{swing}%</strong></label><input id="pattern-swing" type="range" min="0" max="70" value={swing} onChange={(event) => setSwing(Number(event.target.value))} /></div></aside>
-      <div className="channel-rack"><div className="rack-ruler"><span>CHANNEL</span>{[1,2,3,4].map((bar) => <b key={bar}>0{bar}</b>)}</div>{channelNames.map((name,channel) => <div className={`channel-row ${selected === channel ? "selected" : ""} ${muted[channel] ? "muted" : ""}`} key={name}><button className="channel-name" onClick={() => setSelected(channel)}><i style={{background:["#f2a65a","#70bbce","#c79af1","#8fd3a9"][channel]}} /><span>{name}<small>{devices[channel]} · {analysis.hits[channel]} hits</small></span></button><div className="channel-controls"><button className={muted[channel] ? "active" : ""} onClick={() => toggleMute(channel)} aria-label={`Mute ${name}`} aria-pressed={muted[channel]}>M</button><button className={solo === channel ? "active" : ""} onClick={() => toggleSolo(channel)} aria-label={`Solo ${name}`} aria-pressed={solo === channel}>S</button></div><div className="rack-steps">{steps[channel].map((active,step) => <button key={step} aria-label={`${active ? "Change" : "Enable"} ${name} step ${step + 1}`} aria-pressed={Boolean(active)} className={`${active ? "active" : ""} ${active && active < .7 ? "ghost" : ""} ${step % 4 === 0 ? "beat" : ""} ${currentStep === step ? "playing" : ""}`} style={{ "--level": active || .14 } as CSSProperties} onClick={() => toggleStep(channel,step)} />)}</div></div>)}<div className="rack-actions"><button onClick={clearChannel}>Clear selected</button><button onClick={duplicateChannel}>Duplicate to next</button><button onClick={humanizeChannel}>Humanize velocity</button><button onClick={generateVariation}>Make B variation</button></div><div className="rack-footer"><button onClick={reset}><RotateCcw size={11} /> Reset</button><span>16 STEPS · VELOCITY · AUTOSAVED</span><button onClick={() => onAsk(`Analyze this pattern: score ${analysis.score}, density ${analysis.density}%, syncopation ${analysis.syncopation}%, space ${analysis.space}%, average velocity ${analysis.averageVelocity}%, ghost notes ${analysis.ghostNotes}. Focus on ${channelNames[selected]} with ${analysis.hits[selected]} hits. Give one specific edit and explain why.`)}>Ask Copilot <Sparkles size={12} /></button></div></div>
-      <aside className="coach-strip"><span className="section-kicker">Studio feature coach</span><strong>{channelNames[selected]}</strong><p>{analysis.advice}</p><div className="coach-meter"><i style={{height:`${Math.max(18, analysis.density)}%`}} /><i style={{height:`${Math.max(18, analysis.averageVelocity)}%`}} /><i style={{height:`${Math.max(18, analysis.space)}%`}} /><i style={{height:`${Math.max(18, analysis.score)}%`}} /></div><dl><div><dt>Role</dt><dd>{["Anchor","Motion","Answer","Texture"][selected]}</dd></div><div><dt>Density</dt><dd>{analysis.hits[selected]}/16</dd></div><div><dt>Preset</dt><dd>{activePreset}</dd></div></dl><button onClick={() => onAsk(`Create a focused browser-studio exercise to improve ${channelNames[selected]}. The pattern currently scores ${analysis.score}/100, has ${analysis.ghostNotes} ghost notes, and ${analysis.space}% space.`)}>Open guided exercise <ArrowUpRight size={13} /></button></aside>
+      <aside className="sound-browser" aria-label="Sound browser"><div className="browser-search"><Search size={13} /><span>Find a starting sound</span></div><div className="browser-tabs">{["Sounds","Devices","Lessons"].map((tab) => <button className={browserTab === tab ? "active" : ""} key={tab} onClick={() => setBrowserTab(tab)}>{tab}</button>)}</div><div className="browser-list">{browserTab === "Sounds" && ["Cape Town drums","Organic percussion","Log drum studies","Vocal textures"].map((item,index) => <button key={item} onClick={() => setSelected(index)}><span className={`browser-dot tone-${index}`} /><span>{item}<small>{index + 8} sources</small></span><Plus size={12} /></button>)}{browserTab === "Devices" && ["Kong drum designer","Dr. Octo Rex","Mimic sampler","Grain texture"].map((item,index) => <button key={item} onClick={() => setSelected(index)}><span className="browser-dot device" /><span>{item}<small>Browser instrument</small></span><Plus size={12} /></button>)}{browserTab === "Lessons" && ["Design the pocket","Use call and response","Open the break","Prepare the drop"].map((item) => <button key={item} onClick={() => onAsk(`Teach me how to ${item.toLowerCase()} using this pattern. Current groove score: ${analysis.score}.`)}><span className="browser-dot lesson" /><span>{item}<small>Guided move</small></span><ChevronRight size={12} /></button>)}</div><div className="swing-control"><label htmlFor="pattern-swing">Swing <strong>{swing}%</strong></label><input id="pattern-swing" type="range" min="0" max="70" value={swing} onChange={(event) => setSwing(Number(event.target.value))} /></div></aside>
+      <div className="channel-rack"><div className="rack-ruler"><span>CHANNEL · click steps to cycle ghost / hit / accent</span>{[1,2,3,4].map((bar) => <b key={bar}>0{bar}</b>)}</div>{channelNames.map((name,channel) => <div className={`channel-row ${selected === channel ? "selected" : ""} ${muted[channel] ? "muted" : ""}`} key={name}><button className="channel-name" onClick={() => setSelected(channel)}><i style={{background:["#f2a65a","#70bbce","#c79af1","#8fd3a9"][channel]}} /><span>{name}<small>{devices[channel]} · {analysis.hits[channel]} hits</small></span></button><div className="channel-controls"><button className={muted[channel] ? "active" : ""} onClick={() => toggleMute(channel)} aria-label={`Mute ${name}`} aria-pressed={muted[channel]}>M</button><button className={solo === channel ? "active" : ""} onClick={() => toggleSolo(channel)} aria-label={`Solo ${name}`} aria-pressed={solo === channel}>S</button></div><div className="rack-steps">{steps[channel].map((value,step) => <button key={step} aria-label={`${name} step ${step + 1}: ${stepLabel(value)}`} aria-pressed={Boolean(value)} className={`${value ? "active" : ""} velocity-${value} ${step % 4 === 0 ? "beat" : ""} ${currentStep === step ? "playing" : ""}`} onClick={() => toggleStep(channel,step)}><span /></button>)}</div></div>)}<div className="rack-footer"><button onClick={reset}><RotateCcw size={11} /> Reset</button><span>GHOST / HIT / ACCENT · AUTOSAVED</span><button onClick={() => onAsk(`Analyze this pattern: preset ${activePreset}, score ${analysis.score}, density ${analysis.density}%, syncopation ${analysis.syncopation}%, dynamics ${analysis.dynamics}%, space ${analysis.space}%. Focus on ${channelNames[selected]} with ${analysis.hits[selected]} hits. Give one specific studio edit and explain why.`)}>Ask Copilot <Sparkles size={12} /></button></div></div>
+      <aside className="coach-strip"><span className="section-kicker">Studio tools</span><strong>{channelNames[selected]}</strong><p>{analysis.advice}</p><div className="coach-meter"><i style={{height:`${Math.max(18, analysis.density)}%`}} /><i style={{height:`${Math.max(18, analysis.syncopation)}%`}} /><i style={{height:`${Math.max(18, analysis.dynamics)}%`}} /><i style={{height:`${Math.max(18, analysis.score)}%`}} /></div><dl><div><dt>Role</dt><dd>{["Anchor","Motion","Answer","Texture"][selected]}</dd></div><div><dt>Density</dt><dd>{analysis.hits[selected]}/16</dd></div><div><dt>Preset</dt><dd>{activePreset}</dd></div></dl><button onClick={() => onAsk(`Create a focused browser-studio exercise to improve ${channelNames[selected]}. The pattern preset is ${activePreset} and scores ${analysis.score}/100.`)}>Open guided exercise <ArrowUpRight size={13} /></button></aside>
     </div>
   </section>;
 }
