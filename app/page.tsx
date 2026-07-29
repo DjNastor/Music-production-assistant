@@ -169,9 +169,9 @@ const navContext: Record<string, { eyebrow: string; title: string; copy: string 
 };
 
 const assistantReplies = [
-  "The peak already has enough density. I’d remove one percussion answer in the final four bars of the break, then let the vocal cue carry the transition.",
-  "At 120 BPM, the groove benefits from patience. Keep the low-end pattern stable and create movement with the upper percussion before changing the bass phrase.",
-  "The phase picture is stable. Widen the texture above the midrange, but leave the kick, bass, and main vocal anchor on the centre rail.",
+  "Nastor DNA read: keep the four kick anchors steady, then make the shaker and log-drum answer each other. If the loop feels busy, remove the last upper-percussion hit before adding any new sound.",
+  "This should stay close to the uploaded Nastor reference: 120 BPM, minor mood, organic percussion, controlled ghost notes, and one clear 8-bar change instead of an EDM-style drop.",
+  "The style-fit move is restraint. Leave the bass phrase short, widen only the air/texture layer, and keep kick, bass, and lead vocal information on the centre rail with roughly -6 dB headroom.",
 ];
 
 const initialQueue: QueueTask[] = [
@@ -179,6 +179,57 @@ const initialQueue: QueueTask[] = [
   { id: 2, title: "Digital Retro stems", detail: "Grouped production files", time: "18:42", status: "complete" },
   { id: 3, title: "Club master preview", detail: "WAV 24-bit · local mock", time: "Queued", status: "waiting" },
 ];
+
+const nastorStyleProfile = {
+  reference: "Uploaded Nastor beat",
+  url: "https://cdn.acedata.cloud/uploads/fbbbc31d-1fbd-4c07-b761-73d26ae7f7a1",
+  genre: "Afro House",
+  tempo: { target: 120, min: 118, max: 122 },
+  keyCenter: "minor",
+  feel: ["organic", "hypnotic", "open-air", "warm", "restrained", "club-ready"],
+  rules: [
+    "Keep the four-on-the-floor kick stable before adding decoration.",
+    "Use organic shaker, rim, log-drum, and vocal-air answers for movement.",
+    "Let ghost notes and velocity movement create pocket without overcrowding.",
+    "Make one useful change every 8 or 16 bars instead of forcing a big drop.",
+    "Preserve negative space and leave the kick, bass, and lead vocal in the centre.",
+  ],
+  avoid: ["EDM supersaw drops", "busy fills", "too many chord changes", "basslines that fight the kick"],
+};
+
+type GrooveAnalysis = {
+  hits: number[];
+  density: number;
+  syncopation: number;
+  space: number;
+  score: number;
+  advice: string;
+  averageVelocity: number;
+  ghostNotes: number;
+  barBalance: number[];
+};
+
+function scoreNastorFit(analysis: GrooveAnalysis, bpm: number, swing: number) {
+  const tempoScore = bpm >= nastorStyleProfile.tempo.min && bpm <= nastorStyleProfile.tempo.max ? 20 : Math.max(0, 20 - Math.abs(bpm - nastorStyleProfile.tempo.target) * 2);
+  const anchorScore = Math.min(20, analysis.hits[0] * 5);
+  const ghostScore = analysis.ghostNotes >= 3 && analysis.ghostNotes <= 8 ? 15 : Math.max(0, 15 - Math.abs(5 - analysis.ghostNotes) * 3);
+  const spaceScore = analysis.space >= 58 && analysis.space <= 82 ? 15 : Math.max(0, 15 - Math.abs(70 - analysis.space) * .45);
+  const densityScore = analysis.density >= 24 && analysis.density <= 46 ? 12 : Math.max(0, 12 - Math.abs(35 - analysis.density) * .35);
+  const swingScore = swing >= 28 && swing <= 46 ? 10 : Math.max(0, 10 - Math.abs(38 - swing) * .35);
+  const callResponseScore = analysis.hits[2] >= 2 && analysis.hits[2] <= 4 ? 8 : Math.max(0, 8 - Math.abs(3 - analysis.hits[2]) * 2);
+  const score = Math.round(tempoScore + anchorScore + ghostScore + spaceScore + densityScore + swingScore + callResponseScore);
+  const notes = [
+    bpm < nastorStyleProfile.tempo.min || bpm > nastorStyleProfile.tempo.max ? "Return the tempo toward 120 BPM." : "Tempo sits in Nastor's Afro House lane.",
+    analysis.hits[0] < 4 ? "Restore all four kick anchors before adding extra percussion." : "Kick anchor is stable enough for club movement.",
+    analysis.space < 58 ? "Remove one upper-percussion hit to recover negative space." : "The loop leaves enough air for vocal texture and arrangement moves.",
+    analysis.ghostNotes < 3 ? "Add two softer ghost hits for human pocket." : "Ghost notes are supporting the pocket without becoming the hook.",
+  ];
+  return {
+    score,
+    label: score >= 88 ? "NASTOR_LOCKED" : score >= 74 ? "CLOSE_TO_NASTOR" : score >= 58 ? "NEEDS_MORE_POCKET" : "OFF_STYLE",
+    notes,
+  };
+}
 
 function NastorMark() {
   return (
@@ -351,7 +402,7 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
     return () => { window.clearTimeout(timer); output.disconnect(); };
   }, [deskPlaying, bpm, swing, steps, muted, solo]);
 
-  const analysis = useMemo(() => {
+  const analysis = useMemo<GrooveAnalysis>(() => {
     const hits = steps.map((row) => row.filter(Boolean).length);
     const total = hits.reduce((sum, value) => sum + value, 0);
     const averageVelocity = total ? Math.round(steps.flat().reduce((sum, value) => sum + value, 0) / total * 100) : 0;
@@ -368,18 +419,21 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
     return { hits, density, syncopation, space: Math.round(space), score, advice, averageVelocity, ghostNotes, barBalance };
   }, [steps]);
 
+  const nastorFit = useMemo(() => scoreNastorFit(analysis, bpm, swing), [analysis, bpm, swing]);
+
   const exportPattern = () => { const blob = new Blob([JSON.stringify({ version: 4, name: activePreset, ...snapshot() }, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "nastor-pattern-v4.json"; link.click(); URL.revokeObjectURL(url); };
   const importPattern = (event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(String(reader.result)) as PatternState; if (!Array.isArray(data.steps) || data.steps.length !== 4 || !data.steps.every((row) => Array.isArray(row) && row.length === 16)) throw new Error("Invalid pattern"); checkpoint(); restore({ steps: clonePatternSteps(data.steps), bpm: Math.max(70, Math.min(150, Number(data.bpm) || 120)), swing: Math.max(0, Math.min(70, Number(data.swing) || 0)), muted: Array.isArray(data.muted) && data.muted.length === 4 ? data.muted.map(Boolean) : [false,false,false,false], solo: typeof data.solo === "number" ? data.solo : null, patternSlots: Array.isArray(data.patternSlots) && data.patternSlots.length === 2 ? data.patternSlots : undefined, activeSlot: data.activeSlot === 0 || data.activeSlot === 1 ? data.activeSlot : undefined }); setActivePreset("Imported pattern"); } catch { onAsk("The imported pattern file was invalid. Explain the expected Nastor pattern format."); } }; reader.readAsText(file); event.target.value = ""; };
   const reset = () => { checkpoint(); const fresh = clonePatternSteps(defaultSteps); setSteps(fresh); setBpm(120); setSwing(38); setMuted([false,false,false,false]); setSolo(null); setActiveSlot(0); setPatternSlots([clonePatternSteps(fresh), createPatternVariation(fresh)]); setActivePreset("Afro House starter"); };
 
   return <section className="pattern-desk" aria-labelledby="pattern-desk-title">
     <header className="desk-top"><div><span className="section-kicker">Pattern desk · performance prototype</span><h2 id="pattern-desk-title">Build the pocket before the playlist.</h2></div><div className="desk-tools"><button onClick={undo} disabled={!history.length} aria-label="Undo pattern edit"><Undo2 size={14} /></button><button onClick={redo} disabled={!future.length} aria-label="Redo pattern edit"><Redo2 size={14} /></button><button onClick={() => importRef.current?.click()} aria-label="Import pattern"><Upload size={14} /></button><button onClick={exportPattern} aria-label="Export pattern"><Download size={14} /></button><input ref={importRef} className="sr-only" type="file" accept="application/json,.json" onChange={importPattern} /><div className="desk-transport"><button aria-label={deskPlaying ? "Pause pattern" : "Play pattern"} onClick={() => setDeskPlaying((value) => { if (value) setCurrentStep(-1); return !value; })}>{deskPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}</button><label><span>BPM</span><input aria-label="Pattern tempo" type="number" min="70" max="150" value={bpm} onChange={(event) => updateBpm(Number(event.target.value))} /></label><small>{activePreset.toUpperCase()}</small></div></div></header>
-    <div className="intelligence-bar"><div><span>Groove score</span><strong>{analysis.score}</strong></div><div><span>Velocity</span><strong>{analysis.averageVelocity}%</strong></div><div><span>Ghosts</span><strong>{analysis.ghostNotes}</strong></div><div><span>Space</span><strong>{analysis.space}%</strong></div><p><Sparkles size={13} /> {analysis.advice}</p></div>
+    <div className="intelligence-bar"><div><span>Groove score</span><strong>{analysis.score}</strong></div><div><span>Nastor fit</span><strong>{nastorFit.score}</strong><small>{nastorFit.label}</small></div><div><span>Velocity</span><strong>{analysis.averageVelocity}%</strong></div><div><span>Ghosts</span><strong>{analysis.ghostNotes}</strong></div><div><span>Space</span><strong>{analysis.space}%</strong></div><p><Sparkles size={13} /> {nastorFit.notes[2]} {analysis.advice}</p></div>
     <div className="performance-strip"><div className="slot-switcher"><button className={activeSlot === 0 ? "active" : ""} onClick={() => switchSlot(0)}>Pattern A</button><button className={activeSlot === 1 ? "active" : ""} onClick={() => switchSlot(1)}>Pattern B</button><button onClick={captureSlot}>Capture slot</button></div><div className="arranger-preview" aria-label="Mini arrangement preview">{arrangement.map((slot, index) => <button key={`${slot}-${index}`} onClick={() => switchSlot(slot)} className={activeSlot === slot ? "active" : ""}><span>{index + 1}</span>{slot === 0 ? "A" : "B"}</button>)}</div><div className="bar-balance">{analysis.barBalance.map((count, index) => <span key={index} style={{ "--height": `${Math.max(16, count * 12)}%` } as CSSProperties}>{count}</span>)}</div></div>
+    <div className="nastor-dna-panel"><div><span className="section-kicker">Reference DNA · Nastor style active</span><strong>{nastorStyleProfile.reference}</strong><p>{nastorStyleProfile.genre} around {nastorStyleProfile.tempo.target} BPM · {nastorStyleProfile.keyCenter} keys · {nastorStyleProfile.feel.join(" / ")}</p></div><ul>{nastorFit.notes.map((note) => <li key={note}>{note}</li>)}</ul></div>
     <div className="desk-body">
       <aside className="sound-browser" aria-label="Sound browser"><div className="browser-search"><Search size={13} /><span>Find a starting sound</span></div><div className="browser-tabs">{["Sounds","Devices","Presets","Lessons"].map((tab) => <button className={browserTab === tab ? "active" : ""} key={tab} onClick={() => setBrowserTab(tab)}>{tab}</button>)}</div><div className="browser-list">{browserTab === "Sounds" && ["Cape Town drums","Organic percussion","Log drum studies","Vocal textures"].map((item,index) => <button key={item} onClick={() => setSelected(index)}><span className={`browser-dot tone-${index}`} /><span>{item}<small>{index + 8} sources</small></span><Plus size={12} /></button>)}{browserTab === "Devices" && ["Kong drum designer","Dr. Octo Rex","Mimic sampler","Grain texture"].map((item,index) => <button key={item} onClick={() => setSelected(index)}><span className="browser-dot device" /><span>{item}<small>Browser instrument</small></span><Plus size={12} /></button>)}{browserTab === "Presets" && presets.map((preset) => <button key={preset.name} onClick={() => applyPreset(preset.name)}><span className="browser-dot lesson" /><span>{preset.name}<small>{preset.bpm} BPM · {preset.swing}% swing</small></span><ChevronRight size={12} /></button>)}{browserTab === "Lessons" && ["Design the pocket","Use call and response","Open the break","Prepare the drop"].map((item) => <button key={item} onClick={() => onAsk(`Teach me how to ${item.toLowerCase()} using this pattern. Current groove score: ${analysis.score}, average velocity ${analysis.averageVelocity}%, ghost notes ${analysis.ghostNotes}.`)}><span className="browser-dot lesson" /><span>{item}<small>Guided move</small></span><ChevronRight size={12} /></button>)}</div><div className="swing-control"><label htmlFor="pattern-swing">Swing <strong>{swing}%</strong></label><input id="pattern-swing" type="range" min="0" max="70" value={swing} onChange={(event) => setSwing(Number(event.target.value))} /></div></aside>
-      <div className="channel-rack"><div className="rack-ruler"><span>CHANNEL</span>{[1,2,3,4].map((bar) => <b key={bar}>0{bar}</b>)}</div>{channelNames.map((name,channel) => <div className={`channel-row ${selected === channel ? "selected" : ""} ${muted[channel] ? "muted" : ""}`} key={name}><button className="channel-name" onClick={() => setSelected(channel)}><i style={{background:["#f2a65a","#70bbce","#c79af1","#8fd3a9"][channel]}} /><span>{name}<small>{devices[channel]} · {analysis.hits[channel]} hits</small></span></button><div className="channel-controls"><button className={muted[channel] ? "active" : ""} onClick={() => toggleMute(channel)} aria-label={`Mute ${name}`} aria-pressed={muted[channel]}>M</button><button className={solo === channel ? "active" : ""} onClick={() => toggleSolo(channel)} aria-label={`Solo ${name}`} aria-pressed={solo === channel}>S</button></div><div className="rack-steps">{steps[channel].map((active,step) => <button key={step} aria-label={`${active ? "Change" : "Enable"} ${name} step ${step + 1}`} aria-pressed={Boolean(active)} className={`${active ? "active" : ""} ${active && active < .7 ? "ghost" : ""} ${step % 4 === 0 ? "beat" : ""} ${currentStep === step ? "playing" : ""}`} style={{ "--level": active || .14 } as CSSProperties} onClick={() => toggleStep(channel,step)} />)}</div></div>)}<div className="rack-actions"><button onClick={() => shiftSelected(-1)}>Shift left</button><button onClick={() => shiftSelected(1)}>Shift right</button><button onClick={fillOffbeats}>Fill offbeats</button><button onClick={thinSelected}>Thin selected</button><button onClick={clearChannel}>Clear selected</button><button onClick={duplicateChannel}>Duplicate to next</button><button onClick={humanizeChannel}>Humanize velocity</button><button onClick={() => setChannelVelocity(.52)}>Ghost lane</button><button onClick={() => setChannelVelocity(1)}>Accent lane</button><button onClick={generateVariation}>Make B variation</button></div><div className="rack-footer"><button onClick={reset}><RotateCcw size={11} /> Reset</button><span>16 STEPS · A/B SLOTS · AUTOSAVED</span><button onClick={() => onAsk(`Analyze this pattern: score ${analysis.score}, density ${analysis.density}%, syncopation ${analysis.syncopation}%, space ${analysis.space}%, average velocity ${analysis.averageVelocity}%, ghost notes ${analysis.ghostNotes}. Focus on ${channelNames[selected]} with ${analysis.hits[selected]} hits. Give one specific edit and explain why. Mention whether Pattern A or B should carry the main hook.`)}>Ask Copilot <Sparkles size={12} /></button></div></div>
-      <aside className="coach-strip"><span className="section-kicker">Studio feature coach</span><strong>{channelNames[selected]}</strong><p>{analysis.advice}</p><div className="coach-meter"><i style={{height:`${Math.max(18, analysis.density)}%`}} /><i style={{height:`${Math.max(18, analysis.averageVelocity)}%`}} /><i style={{height:`${Math.max(18, analysis.space)}%`}} /><i style={{height:`${Math.max(18, analysis.score)}%`}} /></div><dl><div><dt>Role</dt><dd>{["Anchor","Motion","Answer","Texture"][selected]}</dd></div><div><dt>Density</dt><dd>{analysis.hits[selected]}/16</dd></div><div><dt>Preset</dt><dd>{activePreset}</dd></div></dl><button onClick={() => onAsk(`Create a focused browser-studio exercise to improve ${channelNames[selected]}. The pattern currently scores ${analysis.score}/100, has ${analysis.ghostNotes} ghost notes, ${analysis.space}% space, and is editing Pattern ${activeSlot === 0 ? "A" : "B"}.`)}>Open guided exercise <ArrowUpRight size={13} /></button></aside>
+      <div className="channel-rack"><div className="rack-ruler"><span>CHANNEL</span>{[1,2,3,4].map((bar) => <b key={bar}>0{bar}</b>)}</div>{channelNames.map((name,channel) => <div className={`channel-row ${selected === channel ? "selected" : ""} ${muted[channel] ? "muted" : ""}`} key={name}><button className="channel-name" onClick={() => setSelected(channel)}><i style={{background:["#f2a65a","#70bbce","#c79af1","#8fd3a9"][channel]}} /><span>{name}<small>{devices[channel]} · {analysis.hits[channel]} hits</small></span></button><div className="channel-controls"><button className={muted[channel] ? "active" : ""} onClick={() => toggleMute(channel)} aria-label={`Mute ${name}`} aria-pressed={muted[channel]}>M</button><button className={solo === channel ? "active" : ""} onClick={() => toggleSolo(channel)} aria-label={`Solo ${name}`} aria-pressed={solo === channel}>S</button></div><div className="rack-steps">{steps[channel].map((active,step) => <button key={step} aria-label={`${active ? "Change" : "Enable"} ${name} step ${step + 1}`} aria-pressed={Boolean(active)} className={`${active ? "active" : ""} ${active && active < .7 ? "ghost" : ""} ${step % 4 === 0 ? "beat" : ""} ${currentStep === step ? "playing" : ""}`} style={{ "--level": active || .14 } as CSSProperties} onClick={() => toggleStep(channel,step)} />)}</div></div>)}<div className="rack-actions"><button onClick={() => shiftSelected(-1)}>Shift left</button><button onClick={() => shiftSelected(1)}>Shift right</button><button onClick={fillOffbeats}>Fill offbeats</button><button onClick={thinSelected}>Thin selected</button><button onClick={clearChannel}>Clear selected</button><button onClick={duplicateChannel}>Duplicate to next</button><button onClick={humanizeChannel}>Humanize velocity</button><button onClick={() => setChannelVelocity(.52)}>Ghost lane</button><button onClick={() => setChannelVelocity(1)}>Accent lane</button><button onClick={generateVariation}>Make B variation</button></div><div className="rack-footer"><button onClick={reset}><RotateCcw size={11} /> Reset</button><span>16 STEPS · A/B SLOTS · AUTOSAVED</span><button onClick={() => onAsk(`Analyze this pattern against the uploaded Nastor beat style: groove score ${analysis.score}, Nastor fit ${nastorFit.score} (${nastorFit.label}), density ${analysis.density}%, syncopation ${analysis.syncopation}%, space ${analysis.space}%, average velocity ${analysis.averageVelocity}%, ghost notes ${analysis.ghostNotes}. Focus on ${channelNames[selected]} with ${analysis.hits[selected]} hits. Give one specific edit, one 8-bar variation move, and one thing to avoid copying too directly.`)}>Ask Copilot <Sparkles size={12} /></button></div></div>
+      <aside className="coach-strip"><span className="section-kicker">Studio feature coach</span><strong>{channelNames[selected]}</strong><p>{analysis.advice}</p><div className="coach-meter"><i style={{height:`${Math.max(18, analysis.density)}%`}} /><i style={{height:`${Math.max(18, analysis.averageVelocity)}%`}} /><i style={{height:`${Math.max(18, analysis.space)}%`}} /><i style={{height:`${Math.max(18, analysis.score)}%`}} /></div><dl><div><dt>Role</dt><dd>{["Anchor","Motion","Answer","Texture"][selected]}</dd></div><div><dt>Density</dt><dd>{analysis.hits[selected]}/16</dd></div><div><dt>Preset</dt><dd>{activePreset}</dd></div></dl><button onClick={() => onAsk(`Create a focused browser-studio exercise to improve ${channelNames[selected]} in Nastor's uploaded reference style. The pattern currently scores ${analysis.score}/100, Nastor fit ${nastorFit.score}/100, has ${analysis.ghostNotes} ghost notes, ${analysis.space}% space, and is editing Pattern ${activeSlot === 0 ? "A" : "B"}.`)}>Open guided exercise <ArrowUpRight size={13} /></button></aside>
     </div>
   </section>;
 }
