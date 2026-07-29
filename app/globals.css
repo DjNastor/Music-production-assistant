@@ -535,3 +535,30 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 
 .nastor-dna-panel li::before { content: "DNA"; margin-right: 8px; color: var(--signal); font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em; }
 .intelligence-bar small { display: block; margin-top: 1px; color: var(--signal); font-family: var(--font-mono); font-size: 8px; letter-spacing: .08em; }
 @media (max-width: 860px) { .nastor-dna-panel { grid-template-columns: 1fr; } }
+
+
+.production-brain {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid rgba(238, 231, 215, .11);
+  background: linear-gradient(145deg, rgba(17, 17, 14, .96), rgba(33, 27, 20, .82));
+}
+.production-brain > header { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+.production-brain h2 { margin: 5px 0 6px; font-family: var(--font-display); font-size: clamp(28px, 5vw, 56px); line-height: .9; text-transform: uppercase; letter-spacing: -.03em; }
+.production-brain p { margin: 0; color: var(--bone-dim); line-height: 1.55; }
+.production-brain > header button, .version-strip > button { min-height: 38px; padding: 0 13px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(201, 243, 74, .28); background: rgba(201, 243, 74, .09); color: var(--signal); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.brain-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.brain-grid button { min-height: 150px; padding: 13px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; border: 1px solid rgba(238, 231, 215, .1); background: rgba(12, 12, 9, .56); color: var(--bone); text-align: left; }
+.brain-grid button:hover { border-color: rgba(207, 123, 62, .45); background: rgba(207, 123, 62, .08); }
+.brain-grid span { color: var(--signal); font-family: var(--font-mono); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
+.brain-grid strong { font-size: 15px; }
+.brain-grid p { font-size: 12px; }
+.brain-grid svg { margin-top: auto; color: var(--copper); }
+.version-strip { margin-top: 12px; padding: 13px; display: grid; grid-template-columns: 190px minmax(0, 1fr) auto; gap: 14px; align-items: center; border: 1px solid rgba(201, 243, 74, .16); background: rgba(201, 243, 74, .045); }
+.version-strip strong { display: block; color: var(--bone); }
+.version-strip ul { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; list-style: none; }
+.version-strip li { padding: 9px; border: 1px solid rgba(238, 231, 215, .09); background: rgba(0,0,0,.17); }
+.version-strip li strong { font-size: 11px; }
+.version-strip li span, .version-strip li small { display: block; color: var(--muted); font-size: 10px; line-height: 1.35; }
+@media (max-width: 1050px) { .brain-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .version-strip { grid-template-columns: 1fr; } .version-strip ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .production-brain > header { display: grid; } .brain-grid, .version-strip ul { grid-template-columns: 1fr; } }

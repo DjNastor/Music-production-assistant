@@ -129,10 +129,27 @@ const labelNews = [
 
 
 const quickActions = [
-  { title: "Map the reference", copy: "Compare structure, weight and energy", icon: Radio },
-  { title: "Reduce the break", copy: "Create space before the peak", icon: AudioLines },
-  { title: "Draft a vocal cue", copy: "Write to the track’s open pocket", icon: Mic2 },
-  { title: "Prepare club master", copy: "Check translation and dynamics", icon: Gauge },
+  { title: "Finish MP3 idea", copy: "Turn a rough bounce into a full production plan", icon: FileAudio },
+  { title: "Remix a song", copy: "Build a respectful new version from a full track", icon: Radio },
+  { title: "Open FLP session", copy: "Read project intent, missing parts and next moves", icon: FolderKanban },
+  { title: "Build version pack", copy: "Full, DJ, radio, instrumental and stemz", icon: AudioLines },
+];
+
+const productionIntelligence = [
+  { title: "Idea to finished record", status: "MP3 / WAV intake", copy: "Analyze a phone note, loop, beat bounce, or demo; detect tempo/key/section intent; suggest missing drums, bass, chords, vocals, transitions, and mix fixes." },
+  { title: "Remix assistant", status: "Respect original", copy: "Map the source song, keep the strongest hook, rebuild rhythm and arrangement in Nastor's lane, then propose club, radio, dub, instrumental, and alternate energy versions." },
+  { title: "FLP / DAW project brain", status: "FL Studio first", copy: "Accept FLP or zipped sessions, inventory tracks/plugins/samples, flag missing files, read arrangement markers, and return a producer task list before touching the mix." },
+  { title: "Version generator", status: "Release pack", copy: "Plan full mix, extended DJ mix, radio edit, dub, instrumental, acapella, clean, short social cut, loop pack, and stemz with loudness/export targets." },
+  { title: "Stemz intelligence", status: "Grouped delivery", copy: "Separate or organize drums, bass, music, vocals, FX, and master references; name files cleanly for remixers, labels, DJs, and engineers." },
+  { title: "Next-level producer", status: "Creative decisions", copy: "Tell Nastor what to add, remove, automate, humanize, arrange, re-record, sidechain, widen, mute, or export next — not just describe the song." },
+];
+
+const deliveryVersions = [
+  { name: "Full version", target: "Streaming / label master", length: "4:30–6:30", note: "Complete intro, theme, break, peak and outro." },
+  { name: "DJ extended", target: "Club mixing", length: "5:30–8:00", note: "Longer intro/outro, cleaner phrase starts, beat-friendly transitions." },
+  { name: "Radio edit", target: "Radio / playlist", length: "2:45–3:30", note: "Fast hook entry, shorter break, strong ending." },
+  { name: "Dub / instrumental", target: "DJs / sync", length: "Track dependent", note: "Less vocal, more groove, usable for sets and licensing." },
+  { name: "Stemz", target: "Remix / mix engineer", length: "Matched to master", note: "Drums, bass, music, vocal, FX and reference master." },
 ];
 
 const launchTemplates = [
@@ -157,11 +174,11 @@ const waveform = Array.from({ length: 96 }, (_, index) => {
 });
 
 const navContext: Record<string, { eyebrow: string; title: string; copy: string }> = {
-  Home: { eyebrow: "Make the first move", title: "Your next track starts with direction.", copy: "Choose a groove, shape eight useful bars, and carry the same production intent from the first pattern to the final master." },
+  Home: { eyebrow: "Production assistant", title: "Take every Nastor idea to the next level.", copy: "Start from a beat, MP3 idea, full song or FLP session, then guide remixing, finishing, arrangement, mixing, stemz and release-ready versions." },
   Studio: { eyebrow: "Active session · Tahoe Studios", title: "Listen like an engineer.", copy: "Shape the energy curve first. Mix decisions become easier when every section has a clear job." },
   Projects: { eyebrow: "Catalog desk", title: "One artist. Several rooms.", copy: "Move between DJ Nastor, Tahoe Studios, Phushi Plan Music, and Lukulu Recordings without losing the session thread." },
   Library: { eyebrow: "Source library", title: "Keep the palette intentional.", copy: "References, stems, notes, and production context stay close to the active record." },
-  "AI Assistant": { eyebrow: "Copilot channel", title: "Ask the session a better question.", copy: "The local demo follows the selected project, arrangement section, and attached context." },
+  "AI Assistant": { eyebrow: "Copilot channel", title: "Ask the session what to do next.", copy: "The assistant should understand MP3 ideas, full songs, remix briefs, FLP projects, stems, versions and delivery targets." },
   Lyrics: { eyebrow: "Writing channel", title: "Leave room for the line.", copy: "Build concise vocal ideas around the groove instead of filling every open bar." },
   Prompts: { eyebrow: "Direction deck", title: "Describe movement, not genre tags.", copy: "Turn tension, texture, and club intention into production-ready prompts." },
   Reference: { eyebrow: "Reference monitor", title: "Compare with purpose.", copy: "Focus on structure, low-end behavior, and perceived energy—not imitation." },
@@ -169,15 +186,18 @@ const navContext: Record<string, { eyebrow: string; title: string; copy: string 
 };
 
 const assistantReplies = [
-  "Nastor DNA read: keep the four kick anchors steady, then make the shaker and log-drum answer each other. If the loop feels busy, remove the last upper-percussion hit before adding any new sound.",
-  "This should stay close to the uploaded Nastor reference: 120 BPM, minor mood, organic percussion, controlled ghost notes, and one clear 8-bar change instead of an EDM-style drop.",
+  "Nastor DNA read: keep the four kick anchors steady, then make the shaker and log-drum answer each other. If this came from an MP3 idea, map sections, choose the strongest 8 bars, then build intro, break, peak and outro around that pocket.",
+  "For a remix, protect the hook first. Then rebuild drums, bass and arrangement in Nastor's lane: 120 BPM Afro/organic pulse, controlled ghost notes, strong negative space, and a DJ-friendly extended intro/outro.",
+  "For an FLP/project upload, the assistant should inventory channels, plugins, samples, routing and arrangement markers; then return missing files, mix risks, stem groups, and the next five production decisions.",
+  "Version pack plan: full master, DJ extended, radio edit, dub/instrumental, acapella if vocals exist, clean edit if needed, short social cut, and grouped stemz for drums, bass, music, vocals and FX.",
   "The style-fit move is restraint. Leave the bass phrase short, widen only the air/texture layer, and keep kick, bass, and lead vocal information on the centre rail with roughly -6 dB headroom.",
 ];
 
 const initialQueue: QueueTask[] = [
   { id: 1, title: "Find A Way reference map", detail: "Structure and tonal balance · local analysis", time: "01:18", status: "processing" },
-  { id: 2, title: "Digital Retro stems", detail: "Grouped production files", time: "18:42", status: "complete" },
-  { id: 3, title: "Club master preview", detail: "WAV 24-bit · local mock", time: "Queued", status: "waiting" },
+  { id: 2, title: "Digital Retro stemz", detail: "Drums, bass, music, vocal, FX groups", time: "18:42", status: "complete" },
+  { id: 3, title: "MP3 idea finisher", detail: "Arrangement, missing parts and mix decisions", time: "Ready", status: "waiting" },
+  { id: 4, title: "Version pack preview", detail: "Full, DJ, radio, dub and instrumental", time: "Queued", status: "waiting" },
 ];
 
 const nastorStyleProfile = {
@@ -438,6 +458,29 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   </section>;
 }
 
+function ProductionBrain({ onAsk, onExport }: { onAsk: (prompt: string) => void; onExport: () => void }) {
+  return (
+    <section className="production-brain" aria-labelledby="production-brain-title">
+      <header>
+        <div>
+          <span className="section-kicker">Production intelligence · roadmap active</span>
+          <h2 id="production-brain-title">From rough idea to release pack.</h2>
+          <p>Nastor can use this assistant as a producer brain: feed it an MP3 idea, a full song, remix reference, FLP project or stems, then ask for concrete next moves and release-ready versions.</p>
+        </div>
+        <button onClick={() => onAsk("Build a complete production plan from my next uploaded idea: analyze tempo/key, strongest hook, missing parts, arrangement, remix options, mix problems, stemz and version pack.")}>Plan next upload <Sparkles size={15} /></button>
+      </header>
+      <div className="brain-grid">
+        {productionIntelligence.map((item) => <button key={item.title} onClick={() => onAsk(`${item.title}: ${item.copy} Give Nastor a practical workflow, required inputs, decisions to make, and output versions.`)}><span>{item.status}</span><strong>{item.title}</strong><p>{item.copy}</p><ChevronRight size={15} /></button>)}
+      </div>
+      <div className="version-strip">
+        <div><span className="section-kicker">Version outputs</span><strong>Generate many useful versions, not one bounce.</strong></div>
+        <ul>{deliveryVersions.map((version) => <li key={version.name}><strong>{version.name}</strong><span>{version.target}</span><small>{version.length} · {version.note}</small></li>)}</ul>
+        <button onClick={onExport}>Open export pack <Download size={15} /></button>
+      </div>
+    </section>
+  );
+}
+
 function PhaseScope({ playing, progress }: { playing: boolean; progress: number }) {
   return (
     <section className="phase-panel panel-shell" aria-labelledby="phase-title">
@@ -516,18 +559,18 @@ function Copilot({ project, messages, value, setValue, onSubmit, onSuggestion, o
         {mobile ? <button className="icon-button" aria-label="Close Copilot" onClick={onClose}><X size={19} /></button> : <button className="icon-button" aria-label="Copilot options" onClick={onOptions}><MoreHorizontal size={19} /></button>}
       </header>
       <div className="copilot-context"><span>{project.genre.toUpperCase()}</span><span>{project.analysisAvailable ? "ARRANGEMENT" : "CATALOG"}</span><span>{project.musicalKey.toUpperCase()}</span></div>
-      <div className="context-strip"><span>LOCAL DEMO</span><p>Replies are mocked from the active project context.</p></div>
+      <div className="context-strip"><span>PRODUCTION BRAIN</span><p>Understands idea finishing, remix planning, FLP audits, version packs and stemz workflows.</p></div>
       <div className="message-list" ref={scrollRef} aria-live="polite">
         {messages.map((message) => <div key={message.id} className={`message ${message.role}`}>{message.role === "assistant" && <span className="message-mark"><NastorMark /></span>}<div><span className="message-author">{message.role === "assistant" ? "COPILOT" : "YOU"}</span><p>{message.text}</p></div></div>)}
       </div>
-      <div className="suggestion-row" aria-label="Suggested prompts">{["Clear the break", "Check low-end", "Plan the outro"].map((text) => <button key={text} onClick={() => onSuggestion(text)}>{text}</button>)}</div>
+      <div className="suggestion-row" aria-label="Suggested prompts">{["Finish this MP3", "Remix version", "Make stemz", "Radio edit"].map((text) => <button key={text} onClick={() => onSuggestion(text)}>{text}</button>)}</div>
       <form className="composer" onSubmit={onSubmit}>
         <label className="sr-only" htmlFor={mobile ? "mobile-copilot-input" : "copilot-input"}>Message Nastor Copilot</label>
         <textarea id={mobile ? "mobile-copilot-input" : "copilot-input"} rows={3} placeholder={`Ask about ${project.title}…`} value={value} onChange={(event) => setValue(event.target.value)} onKeyDown={handleComposerKeyDown} />
-        <input ref={fileRef} className="sr-only" type="file" accept="audio/*,.als,.flp,.logicx,.zip" onChange={onAttach} />
+        <input ref={fileRef} className="sr-only" type="file" accept="audio/*,.flp,.fst,.zip,.als,.logicx,.mid,.midi" onChange={onAttach} />
         <div><button type="button" className="attach-button" aria-label="Attach project context" onClick={() => fileRef.current?.click()}><Plus size={18} /></button><span title={attachedFile || undefined}>{attachedFile || "Attach local context"}</span><button type="submit" className="send-button" disabled={!value.trim()} aria-label="Send message"><Send size={17} /></button></div>
       </form>
-      <p className="copilot-disclaimer">No files leave this local prototype.</p>
+      <p className="copilot-disclaimer">Prototype UI: real audio rendering, FLP editing and stem separation require a connected production backend.</p>
     </aside>
   );
 }
@@ -542,7 +585,7 @@ export default function StudioPage() {
   const [commandQuery, setCommandQuery] = useState("");
   const [commandIndex, setCommandIndex] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [exportPreset, setExportPreset] = useState("WAV · 24-bit");
+  const [exportPreset, setExportPreset] = useState("Release pack · Full + DJ + Radio");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [demoEmail, setDemoEmail] = useState("");
@@ -557,8 +600,8 @@ export default function StudioPage() {
   const [toast, setToast] = useState("");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, role: "assistant", text: "Find A Way is holding a stable centre image. The opportunity is structural: let the break breathe before adding anything to the peak." },
-    { id: 2, role: "assistant", text: "At 120 BPM in A minor, the low end can stay patient. Use the vocal cue and upper percussion to create forward motion." },
+    { id: 1, role: "assistant", text: "Upload or describe a beat, MP3 idea, full song, FLP project or stems. I will turn it into a production plan: finish, remix, arrange, mix, master, stemz and versions." },
+    { id: 2, role: "assistant", text: "For Nastor's lane I will protect the groove and hook first, then build practical outputs: full version, DJ extended, radio edit, dub/instrumental, social cut and grouped stemz." },
   ]);
 
   const context = navContext[activeNav] ?? navContext.Home;
@@ -612,12 +655,12 @@ export default function StudioPage() {
 
   const runQuickAction = (title: string) => {
     const prompts: Record<string, string> = {
-      "Map the reference": `Compare structure and tonal balance for ${activeProject}`,
-      "Reduce the break": "Show me what to remove from the break before the peak",
-      "Draft a vocal cue": "Draft a restrained vocal cue that leaves room for the groove",
-      "Prepare club master": "Review dynamics and club translation before export",
+      "Finish MP3 idea": `Take an MP3 idea for ${activeProject} to the next level: detect tempo/key, choose the strongest 8 bars, write missing parts, arrangement, mix notes and final version outputs.`,
+      "Remix a song": "Create a remix workflow: protect the hook, rebuild drums/bass in Nastor style, map sections, choose what to remove, and plan full/DJ/radio/dub versions.",
+      "Open FLP session": "Explain how to inspect an FLP project: channels, samples, plugins, routing, markers, missing files, mix issues, stem groups and the next five production decisions.",
+      "Build version pack": "Plan exports for full version, DJ extended, radio edit, dub, instrumental, acapella if available, clean edit, social cut and grouped stemz.",
     };
-    setInput(prompts[title]);
+    setInput(prompts[title] ?? title);
     if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true);
     setToast(`${title} loaded into Copilot`);
   };
@@ -658,7 +701,7 @@ export default function StudioPage() {
     const file = event.target.files?.[0];
     if (!file) return;
     setAttachedFile(file.name);
-    setToast(`${file.name} added to local context`);
+    setToast(`${file.name} ready for production intelligence`);
     event.target.value = "";
   };
 
@@ -699,6 +742,7 @@ export default function StudioPage() {
           <div className="canvas-inner">
             <Briefing context={context} activeNav={activeNav} />
             <LaunchRail onLaunch={(cue, name) => { setInput(cue); setActiveNav("AI Assistant"); setToast(`${name} brief loaded into Copilot`); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onOpenStudio={() => navigateTo("Studio")} />
+            <ProductionBrain onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production intelligence loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
             <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production question loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <section className="label-intro" aria-labelledby="label-intro-title">
               <div>
@@ -753,7 +797,7 @@ export default function StudioPage() {
 
       {commandOpen && <div className="overlay dialog-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCommandOpen(false); }}><section className="command-dialog" role="dialog" aria-modal="true" aria-labelledby="command-title"><h2 id="command-title" className="sr-only">Command palette</h2><div className="command-input"><Search size={19} /><label className="sr-only" htmlFor="command-search">Search commands</label><input id="command-search" autoFocus placeholder="Jump to a studio tool…" value={commandQuery} onChange={(event) => { setCommandQuery(event.target.value); setCommandIndex(0); }} onKeyDown={handleCommandKeyDown} aria-activedescendant={commandItems[commandIndex] ? `command-${commandItems[commandIndex].label.replaceAll(" ", "-")}` : undefined} /><kbd>ESC</kbd></div><div className="command-results"><span className="command-group-label">Studio tools</span>{commandItems.map(({ label, icon: Icon }, index) => <button id={`command-${label.replaceAll(" ", "-")}`} key={label} className={commandIndex === index ? "active" : ""} onMouseEnter={() => setCommandIndex(index)} onClick={() => chooseCommand(label)}><Icon size={18} /><span>{label}</span><small>Open workspace</small><ChevronRight size={15} /></button>)}{!commandItems.length && <p className="empty-command">No matching studio command.</p>}</div><footer><span><Command size={14} />K to open</span><span>↑↓ to navigate</span><span>Enter to select</span></footer></section></div>}
 
-      {exportOpen && <div className="overlay dialog-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setExportOpen(false); }}><section className="export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-title"><header><div><span className="section-kicker">Local delivery</span><h2 id="export-title">Export project</h2></div><button className="icon-button" aria-label="Close export dialog" onClick={() => setExportOpen(false)}><X size={19} /></button></header><p>Choose a mock export preset for <strong>{activeProject}</strong>. No audio will be rendered.</p><div className="preset-list" role="radiogroup" aria-label="Export preset">{[{ name: "WAV · 24-bit", sub: "Full-resolution mix", icon: FileAudio }, { name: "MP3 · 320 kbps", sub: "Private listening preview", icon: Music2 }, { name: "Stems · WAV", sub: "Grouped production stems", icon: AudioLines }].map(({ name, sub, icon: Icon }) => <button key={name} role="radio" aria-checked={exportPreset === name} className={exportPreset === name ? "selected" : ""} onClick={() => setExportPreset(name)}><Icon size={19} /><span><strong>{name}</strong><small>{sub}</small></span><i>{exportPreset === name && <Check size={14} />}</i></button>)}</div><div className="export-details"><span><Gauge size={15} /> Local mock</span><span>44.1 kHz</span><span>No backend connected</span></div><footer><button className="cancel-button" onClick={() => setExportOpen(false)}>Cancel</button><button className="primary-action" onClick={addExportToQueue}>Add to queue <ChevronRight size={16} /></button></footer></section></div>}
+      {exportOpen && <div className="overlay dialog-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setExportOpen(false); }}><section className="export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-title"><header><div><span className="section-kicker">Local delivery</span><h2 id="export-title">Export project</h2></div><button className="icon-button" aria-label="Close export dialog" onClick={() => setExportOpen(false)}><X size={19} /></button></header><p>Choose a mock export preset for <strong>{activeProject}</strong>. No audio will be rendered.</p><div className="preset-list" role="radiogroup" aria-label="Export preset">{[{ name: "Release pack · Full + DJ + Radio", sub: "Main master, extended club mix and short edit", icon: Disc3 }, { name: "Stemz · Drums/Bass/Music/Vocal/FX", sub: "Grouped WAV delivery for remix and mix work", icon: AudioLines }, { name: "Remix pack", sub: "Original reference, reconstructed groove, dub and instrumental", icon: Radio }, { name: "MP3 preview set", sub: "Fast private listening versions", icon: Music2 }, { name: "FLP handoff notes", sub: "Session audit, missing files and next decisions", icon: FolderKanban }].map(({ name, sub, icon: Icon }) => <button key={name} role="radio" aria-checked={exportPreset === name} className={exportPreset === name ? "selected" : ""} onClick={() => setExportPreset(name)}><Icon size={19} /><span><strong>{name}</strong><small>{sub}</small></span><i>{exportPreset === name && <Check size={14} />}</i></button>)}</div><div className="export-details"><span><Gauge size={15} /> Local mock</span><span>44.1 kHz</span><span>Prototype workflow</span></div><footer><button className="cancel-button" onClick={() => setExportOpen(false)}>Cancel</button><button className="primary-action" onClick={addExportToQueue}>Add to queue <ChevronRight size={16} /></button></footer></section></div>}
 
       {inviteOpen && <div className="overlay dialog-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setInviteOpen(false); }}><form className="utility-dialog" role="dialog" aria-modal="true" aria-labelledby="invite-title" onSubmit={inviteCollaborator}><header><div><span className="section-kicker">Local collaboration</span><h2 id="invite-title">Invite to this project</h2></div><button type="button" className="icon-button" aria-label="Close invite dialog" onClick={() => setInviteOpen(false)}><X size={19} /></button></header><p>Prepare a local invite for <strong>{activeProject}</strong>. No email will be sent.</p><label htmlFor="invite-email">Email address</label><input id="invite-email" type="email" autoFocus required placeholder="producer@example.com" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} /><footer><button type="button" className="cancel-button" onClick={() => setInviteOpen(false)}>Cancel</button><button type="submit" className="primary-action">Prepare invite <ChevronRight size={16} /></button></footer></form></div>}
 
