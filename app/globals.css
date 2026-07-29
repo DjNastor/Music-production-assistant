@@ -562,3 +562,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 
 .version-strip li span, .version-strip li small { display: block; color: var(--muted); font-size: 10px; line-height: 1.35; }
 @media (max-width: 1050px) { .brain-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .version-strip { grid-template-columns: 1fr; } .version-strip ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .production-brain > header { display: grid; } .brain-grid, .version-strip ul { grid-template-columns: 1fr; } }
+
+.reference-player { width: 100%; margin-top: 12px; accent-color: var(--signal); filter: sepia(.2) saturate(.9); }
+.dna-intel { display: grid; gap: 12px; }
+.dna-rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dna-rule-grid div { padding: 10px; border: 1px solid rgba(238, 231, 215, .1); background: rgba(9, 9, 7, .28); }
+.dna-rule-grid span { display: block; margin-bottom: 7px; color: var(--signal); font-family: var(--font-mono); font-size: 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.dna-rule-grid em { display: block; color: var(--bone-dim); font-style: normal; font-size: 11px; line-height: 1.35; }
+.dna-rule-grid em + em { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(238, 231, 215, .07); }
+@media (max-width: 640px) { .dna-rule-grid { grid-template-columns: 1fr; } }
