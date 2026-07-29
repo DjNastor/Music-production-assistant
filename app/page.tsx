@@ -151,6 +151,48 @@ const deliveryVersions = [
   { name: "Stemz", target: "Remix / mix engineer", length: "Matched to master", note: "Drums, bass, music, vocal, FX and reference master." },
 ];
 
+
+const backendModules = [
+  { name: "Upload + asset vault", role: "Accept MP3/WAV/ZIP/FLP/stems, store originals, create previews, track ownership and project versions.", stack: "S3/R2 storage · signed URLs · Postgres" },
+  { name: "Audio analysis worker", role: "Detect BPM, key, sections, loudness, phase, transients, groove density, hooks and mix risks.", stack: "Python DSP · librosa/Essentia · queue jobs" },
+  { name: "Stem separation", role: "Split full songs into vocal, drums, bass, music and FX groups for remixing and stemz packs.", stack: "Demucs/MDX style service · GPU worker" },
+  { name: "FLP project reader", role: "Inventory FL Studio projects, zipped samples, plugins, mixer routing, playlist structure and missing files.", stack: "FLP parser · ZIP scanner · plugin manifest" },
+  { name: "Production brain API", role: "Turn analysis into decisions: what to add, remove, arrange, humanize, mix, master and export next.", stack: "LLM orchestration · Nastor DNA profile · prompt tools" },
+  { name: "Render + export farm", role: "Generate full, DJ, radio, dub, instrumental, preview MP3 and grouped stemz delivery packages.", stack: "DAW/render workers · FFmpeg · loudness targets" },
+];
+
+const backendFlow = [
+  "Upload song idea, full song, FLP zip, stems or remix source.",
+  "Create immutable asset record and low-resolution preview.",
+  "Run audio/FLP analysis workers and store structured metadata.",
+  "Build a Nastor production brief with risks, missing parts and next moves.",
+  "Create editable tasks: finish, remix, arrange, mix, master or version pack.",
+  "Render/export deliverables and save every version with stemz and notes.",
+];
+
+const backendMilestones = [
+  { phase: "MVP 1", scope: "Upload MP3/WAV, analyze BPM/key/sections/loudness, produce a production plan and version checklist." },
+  { phase: "MVP 2", scope: "Add stem separation, remix planning, grouped stemz export naming and DJ/radio edit instructions." },
+  { phase: "MVP 3", scope: "Add FLP zip intake, session audit, missing sample report, plugin list and handoff notes." },
+  { phase: "MVP 4", scope: "Connect render workers for real audio exports, previews, masters and version packs." },
+];
+
+const backendRoadmap = [
+  { phase: "01", title: "Ingest", stack: "Upload API · Object storage · Job queue", copy: "Accept MP3, WAV, ZIP, FLP, MIDI and stem folders. Store originals safely, create a session id, then queue analysis jobs instead of blocking the browser." },
+  { phase: "02", title: "Audio analysis", stack: "BPM/key · sections · loudness · groove", copy: "Extract tempo, key, downbeats, sections, energy curve, headroom, LUFS, stereo correlation, transients, and likely hook moments from full songs or ideas." },
+  { phase: "03", title: "DAW project audit", stack: "FLP parser · ZIP scanner · plugin/sample manifest", copy: "For FL Studio projects, read or request exported project bones, MIDI, stems, plugin list, sample paths and routing notes; flag missing assets and risky plugins." },
+  { phase: "04", title: "Production brain", stack: "LLM planner · Nastor DNA · arrangement rules", copy: "Turn analysis into producer decisions: what to add, remove, replay, automate, mix, extend, shorten, mute, stem, or export next." },
+  { phase: "05", title: "Generation engines", stack: "Stem separation · remix generation · render workers", copy: "Connect audio engines for stem separation, beat reconstruction, idea continuation, alternate versions, previews and final render jobs." },
+  { phase: "06", title: "Delivery", stack: "Version builder · Mastering · Export manifests", copy: "Render full, DJ extended, radio edit, dub, instrumental, clean, social cut and stemz with naming, metadata, loudness targets and downloadable zip packs." },
+];
+
+const backendGuards = [
+  "Only remix or transform songs Nastor owns, licenses, or has permission to use.",
+  "Never overwrite an uploaded FLP; create suggested changes, bounced previews, or a new project package.",
+  "Keep original audio, generated versions, stems, logs and prompts tied to a project id.",
+  "Separate creative planning from final rendering so every expensive job can be reviewed first.",
+];
+
 const launchTemplates = [
   { name: "Afro House", meta: "120 BPM · A MIN", cue: "Build an Afro House foundation with patient low end, organic percussion, and a clear eight-bar question-and-answer phrase." },
   { name: "Amapiano", meta: "112 BPM · F# MIN", cue: "Sketch an Amapiano groove with a restrained log drum, open piano space, and a lift into bar seven." },
@@ -457,6 +499,10 @@ function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   </section>;
 }
 
+function BackendPlan({ onAsk }: { onAsk: (prompt: string) => void }) {
+  return <section className="backend-plan" aria-labelledby="backend-plan-title"><header><div><span className="section-kicker">Real backend plan · build path</span><h2 id="backend-plan-title">Make the assistant actually produce.</h2><p>The prototype needs a backend that can ingest audio and DAW projects, analyze them, queue heavy jobs, run generation engines, and deliver release packs without pretending the browser can do everything alone.</p></div><button onClick={() => onAsk("Turn this backend roadmap into implementation tickets: upload API, storage, queue, analysis workers, FLP audit, stem separation, remix/version generation, mastering/export and permissions.")}>Create build tickets <Command size={15} /></button></header><div className="backend-grid">{backendRoadmap.map((step) => <article key={step.phase}><span>{step.phase}</span><strong>{step.title}</strong><small>{step.stack}</small><p>{step.copy}</p></article>)}</div><div className="backend-guards"><strong>Safety and rights rules</strong><ul>{backendGuards.map((guard) => <li key={guard}>{guard}</li>)}</ul></div></section>;
+}
+
 function ProductionBrain({ onAsk, onExport }: { onAsk: (prompt: string) => void; onExport: () => void }) {
   return (
     <section className="production-brain" aria-labelledby="production-brain-title">
@@ -558,7 +604,7 @@ function Copilot({ project, messages, value, setValue, onSubmit, onSuggestion, o
         {mobile ? <button className="icon-button" aria-label="Close Copilot" onClick={onClose}><X size={19} /></button> : <button className="icon-button" aria-label="Copilot options" onClick={onOptions}><MoreHorizontal size={19} /></button>}
       </header>
       <div className="copilot-context"><span>{project.genre.toUpperCase()}</span><span>{project.analysisAvailable ? "ARRANGEMENT" : "CATALOG"}</span><span>{project.musicalKey.toUpperCase()}</span></div>
-      <div className="context-strip"><span>PRODUCTION BRAIN</span><p>Understands idea finishing, remix planning, FLP audits, version packs and stemz workflows.</p></div>
+      <div className="context-strip"><span>PRODUCTION BRAIN</span><p>Understands idea finishing, remix planning, FLP audits, backend jobs, version packs and stemz workflows.</p></div>
       <div className="message-list" ref={scrollRef} aria-live="polite">
         {messages.map((message) => <div key={message.id} className={`message ${message.role}`}>{message.role === "assistant" && <span className="message-mark"><NastorMark /></span>}<div><span className="message-author">{message.role === "assistant" ? "COPILOT" : "YOU"}</span><p>{message.text}</p></div></div>)}
       </div>
@@ -569,7 +615,7 @@ function Copilot({ project, messages, value, setValue, onSubmit, onSuggestion, o
         <input ref={fileRef} className="sr-only" type="file" accept="audio/*,.flp,.fst,.zip,.als,.logicx,.mid,.midi" onChange={onAttach} />
         <div><button type="button" className="attach-button" aria-label="Attach project context" onClick={() => fileRef.current?.click()}><Plus size={18} /></button><span title={attachedFile || undefined}>{attachedFile || "Attach local context"}</span><button type="submit" className="send-button" disabled={!value.trim()} aria-label="Send message"><Send size={17} /></button></div>
       </form>
-      <p className="copilot-disclaimer">Prototype UI: real audio rendering, FLP editing and stem separation require a connected production backend.</p>
+      <p className="copilot-disclaimer">Prototype UI: real audio rendering, FLP editing, stem separation and remix generation require the backend services mapped below.</p>
     </aside>
   );
 }
@@ -742,6 +788,7 @@ export default function StudioPage() {
             <Briefing context={context} activeNav={activeNav} />
             <LaunchRail onLaunch={(cue, name) => { setInput(cue); setActiveNav("AI Assistant"); setToast(`${name} brief loaded into Copilot`); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onOpenStudio={() => navigateTo("Studio")} />
             <ProductionBrain onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production intelligence loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
+            <BackendPlan onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Backend build plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production question loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <section className="label-intro" aria-labelledby="label-intro-title">
               <div>
