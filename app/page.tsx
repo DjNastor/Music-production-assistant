@@ -212,6 +212,28 @@ const backendGuards = [
   "Separate creative planning from final rendering so every expensive job can be reviewed first.",
 ];
 
+const implementationTickets = [
+  { lane: "API", title: "Create upload sessions", detail: "POST /api/projects + POST /api/assets/sign-upload for MP3, WAV, FLP, ZIP, MIDI and stems." },
+  { lane: "API", title: "Start production jobs", detail: "POST /api/jobs/analyze, /api/jobs/stems, /api/jobs/remix-plan, /api/jobs/export-pack." },
+  { lane: "DB", title: "Project schema", detail: "projects, assets, analyses, jobs, versions, stems, rights_checks, flp_audits and export_manifests." },
+  { lane: "QUEUE", title: "Async worker events", detail: "asset.uploaded → analyze.audio → plan.production → separate.stems → render.versions → notify.ready." },
+  { lane: "WORKER", title: "Audio analysis worker", detail: "Extract BPM, key, downbeats, sections, LUFS, stereo, transients, hook candidates and groove density." },
+  { lane: "WORKER", title: "FLP audit worker", detail: "Read zipped project contents, sample paths, plugin names, project bones, MIDI exports and missing assets." },
+  { lane: "AI", title: "Nastor planner tools", detail: "Ground LLM prompts in analysis JSON, Nastor DNA, user mission, rights status and requested output pack." },
+  { lane: "EXPORT", title: "Release pack builder", detail: "Create full, DJ extended, radio edit, dub, instrumental, previews, stemz zip and manifest.json." },
+];
+
+const storageLayout = [
+  "projects/{projectId}/source/original.ext",
+  "projects/{projectId}/preview/waveform.json",
+  "projects/{projectId}/analysis/audio.json",
+  "projects/{projectId}/flp/audit.json",
+  "projects/{projectId}/stems/{group}.wav",
+  "projects/{projectId}/exports/{versionName}/master.wav",
+  "projects/{projectId}/exports/{versionName}/preview.mp3",
+  "projects/{projectId}/exports/manifest.json",
+];
+
 const launchTemplates = [
   { name: "Afro House", meta: "120 BPM · A MIN", cue: "Build an Afro House foundation with patient low end, organic percussion, and a clear eight-bar question-and-answer phrase." },
   { name: "Amapiano", meta: "112 BPM · F# MIN", cue: "Sketch an Amapiano groove with a restrained log drum, open piano space, and a lift into bar seven." },
@@ -549,6 +571,26 @@ function BackendPlan({ onAsk }: { onAsk: (prompt: string) => void }) {
   return <section className="backend-plan" aria-labelledby="backend-plan-title"><header><div><span className="section-kicker">Real backend plan · build path</span><h2 id="backend-plan-title">Make the assistant actually produce.</h2><p>The prototype needs a backend that can ingest audio and DAW projects, analyze them, queue heavy jobs, run generation engines, and deliver release packs without pretending the browser can do everything alone.</p></div><button onClick={() => onAsk("Turn this backend roadmap into implementation tickets: upload API, storage, queue, analysis workers, FLP audit, stem separation, remix/version generation, mastering/export and permissions.")}>Create build tickets <Command size={15} /></button></header><div className="backend-grid">{backendRoadmap.map((step) => <article key={step.phase}><span>{step.phase}</span><strong>{step.title}</strong><small>{step.stack}</small><p>{step.copy}</p></article>)}</div><div className="backend-guards"><strong>Safety and rights rules</strong><ul>{backendGuards.map((guard) => <li key={guard}>{guard}</li>)}</ul></div></section>;
 }
 
+
+function BuildTickets({ onAsk }: { onAsk: (prompt: string) => void }) {
+  return (
+    <section className="build-tickets" aria-labelledby="build-tickets-title">
+      <header>
+        <span className="section-kicker">Implementation tickets · backend sprint</span>
+        <h2 id="build-tickets-title">Turn the roadmap into engineering work.</h2>
+        <p>These are the first concrete tickets for making uploads, analysis, FLP audits, stemz, remix planning and release-pack exports real.</p>
+      </header>
+      <div className="ticket-grid">
+        {implementationTickets.map((ticket) => <button key={`${ticket.lane}-${ticket.title}`} onClick={() => onAsk(`Write the implementation spec for ${ticket.lane}: ${ticket.title}. Include endpoint/schema/worker steps, errors, status states and tests. Details: ${ticket.detail}`)}><span>{ticket.lane}</span><strong>{ticket.title}</strong><p>{ticket.detail}</p></button>)}
+      </div>
+      <div className="storage-map">
+        <div><span className="section-kicker">Asset layout</span><strong>Every generated file needs a predictable path.</strong></div>
+        <code>{storageLayout.join("\n")}</code>
+      </div>
+    </section>
+  );
+}
+
 function ProductionBrain({ onAsk, onExport }: { onAsk: (prompt: string) => void; onExport: () => void }) {
   return (
     <section className="production-brain" aria-labelledby="production-brain-title">
@@ -836,6 +878,7 @@ export default function StudioPage() {
             <ProductionBrain onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production intelligence loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
             <UploadReleaseFlow onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("User flow loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
             <BackendPlan onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Backend build plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
+            <BuildTickets onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Implementation ticket loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production question loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <section className="label-intro" aria-labelledby="label-intro-title">
               <div>
