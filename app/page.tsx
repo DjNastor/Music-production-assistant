@@ -230,6 +230,35 @@ function LaunchRail({ onLaunch, onOpenStudio }: { onLaunch: (cue: string, name: 
   </section>;
 }
 
+function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
+  const channelNames = ["Foundation kick", "Shaker pocket", "Log drum", "Vocal air"];
+  const initialSteps = [
+    [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+    [0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,1],
+    [0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0],
+    [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
+  ];
+  const [steps, setSteps] = useState(initialSteps);
+  const [selected, setSelected] = useState(1);
+  const [deskPlaying, setDeskPlaying] = useState(false);
+  const [browserTab, setBrowserTab] = useState("Sounds");
+  const coaching = [
+    "Keep the four-on-floor anchor consistent. Movement should come from the percussion around it.",
+    "The shaker defines forward motion. Try removing step 14 before adding another sound.",
+    "Let the log drum answer the kick instead of shadowing every downbeat.",
+    "Use the vocal texture as punctuation. Two placements can feel larger than eight.",
+  ];
+  const toggleStep = (channel: number, step: number) => setSteps((current) => current.map((row, rowIndex) => rowIndex === channel ? row.map((value, stepIndex) => stepIndex === step ? (value ? 0 : 1) : value) : row));
+  return <section className="pattern-desk" aria-labelledby="pattern-desk-title">
+    <header className="desk-top"><div><span className="section-kicker">Pattern desk · guided sketch</span><h2 id="pattern-desk-title">Build the pocket before the playlist.</h2></div><div className="desk-transport"><button aria-label={deskPlaying ? "Pause pattern" : "Play pattern"} onClick={() => setDeskPlaying((value) => !value)}>{deskPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}</button><span>120.00</span><small>PATTERN 01</small></div></header>
+    <div className="desk-body">
+      <aside className="sound-browser" aria-label="Sound browser"><div className="browser-search"><Search size={13} /><span>Find a starting sound</span></div><div className="browser-tabs">{["Sounds","Devices","Lessons"].map((tab) => <button className={browserTab === tab ? "active" : ""} key={tab} onClick={() => setBrowserTab(tab)}>{tab}</button>)}</div><div className="browser-list">{browserTab === "Sounds" && ["Cape Town drums","Organic percussion","Log drum studies","Vocal textures"].map((item,index) => <button key={item}><span className={`browser-dot tone-${index}`} /><span>{item}<small>{index + 8} sources</small></span><Plus size={12} /></button>)}{browserTab === "Devices" && ["Kong drum designer","Mimic sampler","Europa texture","The Echo"].map((item) => <button key={item}><span className="browser-dot device" /><span>{item}<small>Reason 14</small></span><Plus size={12} /></button>)}{browserTab === "Lessons" && ["Design the pocket","Use call and response","Open the break","Prepare the drop"].map((item,index) => <button key={item} onClick={() => onAsk(`Teach me how to ${item.toLowerCase()} in this ${index + 1 === 3 ? "break" : "pattern"}.`)}><span className="browser-dot lesson" /><span>{item}<small>Guided move</small></span><ChevronRight size={12} /></button>)}</div></aside>
+      <div className="channel-rack"><div className="rack-ruler"><span>CHANNEL</span>{[1,2,3,4].map((bar) => <b key={bar}>0{bar}</b>)}</div>{channelNames.map((name,channel) => <div className={`channel-row ${selected === channel ? "selected" : ""}`} key={name}><button className="channel-name" onClick={() => setSelected(channel)}><i style={{background:["#f2a65a","#70bbce","#c79af1","#8fd3a9"][channel]}} /><span>{name}<small>{["Kong","Dr. Octo Rex","Mimic","Grain"][channel]}</small></span></button><div className="channel-controls"><button aria-label={`Mute ${name}`}>M</button><button aria-label={`Solo ${name}`}>S</button></div><div className="rack-steps">{steps[channel].map((active,step) => <button key={step} aria-label={`${active ? "Disable" : "Enable"} ${name} step ${step + 1}`} aria-pressed={Boolean(active)} className={`${active ? "active" : ""} ${step % 4 === 0 ? "beat" : ""}`} onClick={() => toggleStep(channel,step)} />)}</div></div>)}<div className="rack-footer"><button onClick={() => setSteps(initialSteps)}>Reset pattern</button><span>16 STEPS · 1 BAR · 38% SWING</span><button onClick={() => onAsk(`Review my ${channelNames[selected]} pattern and suggest one change that creates more groove without adding density.`)}>Ask Copilot <Sparkles size={12} /></button></div></div>
+      <aside className="coach-strip"><span className="section-kicker">Listening focus</span><strong>{channelNames[selected]}</strong><p>{coaching[selected]}</p><div className="coach-meter"><i /><i /><i /><i /></div><dl><div><dt>Role</dt><dd>{["Anchor","Motion","Answer","Texture"][selected]}</dd></div><div><dt>Density</dt><dd>{steps[selected].filter(Boolean).length}/16</dd></div><div><dt>Next</dt><dd>{["Percussion","Velocity","Pitch","Space"][selected]}</dd></div></dl><button onClick={() => onAsk(`Give me a short Reason 14 exercise for improving the ${channelNames[selected]} as the ${["anchor","motion layer","answer","texture"][selected]} of an Afro House groove.`)}>Open guided exercise <ArrowUpRight size={13} /></button></aside>
+    </div>
+  </section>;
+}
+
 function PhaseScope({ playing, progress }: { playing: boolean; progress: number }) {
   return (
     <section className="phase-panel panel-shell" aria-labelledby="phase-title">
@@ -491,6 +520,7 @@ export default function StudioPage() {
           <div className="canvas-inner">
             <Briefing context={context} activeNav={activeNav} />
             <LaunchRail onLaunch={(cue, name) => { setInput(cue); setActiveNav("AI Assistant"); setToast(`${name} brief loaded into Copilot`); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onOpenStudio={() => navigateTo("Studio")} />
+            <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production question loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <section className="label-intro" aria-labelledby="label-intro-title">
               <div>
                 <span className="section-kicker">TAHOE PLAN MUSIC · INDEPENDENT ELECTRONIC LABEL</span>
