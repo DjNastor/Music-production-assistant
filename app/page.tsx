@@ -334,11 +334,7 @@ function scoreNastorFit(analysis: GrooveAnalysis, bpm: number, swing: number) {
 }
 
 function NastorMark() {
-  return (
-    <span className="nastor-mark" aria-hidden="true">
-      {[8, 16, 25, 13, 30, 20, 10].map((height, index) => <span key={index} style={{ height }} />)}
-    </span>
-  );
+  return <Image className="brand-icon" src="/brand/nastor-waveform-mark.svg" width={40} height={40} alt="Nastor Studio" priority />;
 }
 
 function Sidebar({ active, onChange, onShortcut, onProfile, mobile = false, onClose }: { active: string; onChange: (label: string) => void; onShortcut: () => void; onProfile: () => void; mobile?: boolean; onClose?: () => void }) {
@@ -353,8 +349,8 @@ function Sidebar({ active, onChange, onShortcut, onProfile, mobile = false, onCl
   return (
     <aside className={`sidebar ${mobile ? "sidebar-mobile" : ""}`} aria-label="Studio navigation">
       <div className="brand-row">
+        <Image className="brand-lockup" src="/brand/nastor-studio-logo.svg" width={166} height={40} alt="Nastor Music Production Assistant Studio" priority />
         <NastorMark />
-        <span className="brand-word">NASTOR</span>
         {mobile && <button className="icon-button close-drawer" aria-label="Close navigation" onClick={onClose}><X size={19} /></button>}
       </div>
       <div className="rail-status"><span><i /> Room online</span><small>TAHOE · ZA</small></div>
@@ -688,7 +684,7 @@ function Copilot({ project, messages, value, setValue, onSubmit, onSuggestion, o
   return (
     <aside className={`copilot ${mobile ? "copilot-mobile" : ""}`} aria-label="Nastor Copilot">
       <header className="copilot-header">
-        <div className="copilot-identity"><Image src="/brand/dj-nastor-avatar.jpg" width={38} height={38} alt="" /><div><strong>Nastor Copilot</strong><span><i /> Context: {project.title}</span></div></div>
+        <div className="copilot-identity"><Image src="/brand/nastor-copilot-mark.svg" width={38} height={38} alt="Nastor Copilot" /><div><strong>Nastor Copilot</strong><span><i /> Context: {project.title}</span></div></div>
         {mobile ? <button className="icon-button" aria-label="Close Copilot" onClick={onClose}><X size={19} /></button> : <button className="icon-button" aria-label="Copilot options" onClick={onOptions}><MoreHorizontal size={19} /></button>}
       </header>
       <div className="copilot-context"><span>{project.genre.toUpperCase()}</span><span>{project.analysisAvailable ? "ARRANGEMENT" : "CATALOG"}</span><span>{project.musicalKey.toUpperCase()}</span></div>
