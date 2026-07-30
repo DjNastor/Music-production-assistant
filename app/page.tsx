@@ -369,18 +369,17 @@ function Sidebar({ active, onChange, onShortcut, onProfile, mobile = false, onCl
   );
 }
 
-function Briefing({ context, activeNav }: { context: { eyebrow: string; title: string; copy: string }; activeNav: string }) {
+function Briefing({ activeNav }: { context: { eyebrow: string; title: string; copy: string }; activeNav: string }) {
   return (
-    <section className="briefing" aria-labelledby="briefing-title">
+    <section className="briefing clean-briefing" aria-labelledby="briefing-title">
       <div className="briefing-copy">
-        <span className="section-kicker">{context.eyebrow}</span>
-        <h1 id="briefing-title">{context.title}</h1>
-        <p>{context.copy}</p>
-        <div className="ecosystem-tape" aria-label="Creative ecosystem"><span>DJ NASTOR</span><span>TAHOE STUDIOS</span><span>PHUSHI PLAN MUSIC</span><span>LUKULU RECORDINGS</span></div>
+        <span className="section-kicker">{activeNav === "Home" ? "CONTROL ROOM" : activeNav.toUpperCase()}</span>
+        <h1 id="briefing-title">Nastor Studio</h1>
+        <p>Upload. Arrange. Export.</p>
+        <div className="ecosystem-tape" aria-label="Creative ecosystem"><span>120 BPM</span><span>A MIN</span><span>STEMZ</span><span>RADIO / DJ</span></div>
       </div>
       <div className="briefing-portrait">
-        <Image src="/brand/dj-nastor-studio.jpg" fill priority sizes="(max-width: 760px) 100vw, 380px" alt="DJ Nastor wearing headphones in the studio" />
-        <span className="portrait-caption"><i /> {activeNav === "Home" ? "ACTIVE ROOM" : activeNav.toUpperCase()}</span>
+        <Image src="/brand/nastor-studio-logo.svg" fill priority sizes="(max-width: 760px) 100vw, 380px" alt="Nastor Music Production Assistant Studio" />
       </div>
     </section>
   );
@@ -688,7 +687,7 @@ function Copilot({ project, messages, value, setValue, onSubmit, onSuggestion, o
         {mobile ? <button className="icon-button" aria-label="Close Copilot" onClick={onClose}><X size={19} /></button> : <button className="icon-button" aria-label="Copilot options" onClick={onOptions}><MoreHorizontal size={19} /></button>}
       </header>
       <div className="copilot-context"><span>{project.genre.toUpperCase()}</span><span>{project.analysisAvailable ? "ARRANGEMENT" : "CATALOG"}</span><span>{project.musicalKey.toUpperCase()}</span></div>
-      <div className="context-strip"><span>PRODUCTION BRAIN</span><p>Understands idea finishing, remix planning, FLP audits, backend jobs, version packs and stemz workflows.</p></div>
+      <div className="context-strip"><span>READY</span><p>Finish, remix, stemz, export.</p></div>
       <div className="message-list" ref={scrollRef} aria-live="polite">
         {messages.map((message) => <div key={message.id} className={`message ${message.role}`}>{message.role === "assistant" && <span className="message-mark"><NastorMark /></span>}<div><span className="message-author">{message.role === "assistant" ? "COPILOT" : "YOU"}</span><p>{message.text}</p></div></div>)}
       </div>
@@ -729,8 +728,8 @@ export default function StudioPage() {
   const [toast, setToast] = useState("");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, role: "assistant", text: "Upload or describe a beat, MP3 idea, full song, FLP project or stems. I will turn it into a production plan: finish, remix, arrange, mix, master, stemz and versions." },
-    { id: 2, role: "assistant", text: "For Nastor's lane I will protect the groove and hook first, then build practical outputs: full version, DJ extended, radio edit, dub/instrumental, social cut and grouped stemz." },
+    { id: 1, role: "assistant", text: "Drop an idea. I’ll shape the next move." },
+    { id: 2, role: "assistant", text: "Finish, remix, stemz, export." },
   ]);
 
   const context = navContext[activeNav] ?? navContext.Home;
@@ -870,52 +869,30 @@ export default function StudioPage() {
         <div className="canvas-scroll">
           <div className="canvas-inner">
             <Briefing context={context} activeNav={activeNav} />
-            <LaunchRail onLaunch={(cue, name) => { setInput(cue); setActiveNav("AI Assistant"); setToast(`${name} brief loaded into Copilot`); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onOpenStudio={() => navigateTo("Studio")} />
-            <ProductionBrain onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production intelligence loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
-            <UploadReleaseFlow onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("User flow loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
-            <BackendPlan onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Backend build plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
-            <BuildTickets onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Implementation ticket loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
-            <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Production question loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
-            <section className="label-intro" aria-labelledby="label-intro-title">
-              <div>
-                <span className="section-kicker">TAHOE PLAN MUSIC · INDEPENDENT ELECTRONIC LABEL</span>
-                <h2 id="label-intro-title">Rhythm with a point of view.</h2>
-                <p>Afro House, organic textures, and records made for movement. Explore the latest releases, meet the room behind the sound, and listen in full context.</p>
-              </div>
-              <div className="label-intro-meta"><span><i /> Based in Cape Town</span><span>EST. 2024</span><span>120 BPM / OPEN AIR</span></div>
-            </section>
-            <div className="record-console">
+            <div className="record-console clean-console">
               <Arrangement project={project} playing={playing} progress={progress} onPlay={() => setPlaying((value) => !value)} selected={selectedSection} onSelect={selectSection} onOptions={() => setToast(`${selectedSection} controls selected`)} onReturn={() => selectProject("Find A Way")} />
               <PhaseScope playing={playing} progress={progress} />
             </div>
-
-            <section className="release-section section-block" aria-labelledby="releases-title">
-              <div className="section-heading release-heading"><div><span className="section-kicker">CATALOGUE · 2026</span><h2 id="releases-title">Latest releases</h2></div><button className="text-button" onClick={() => navigateTo("Projects")}>View full catalog <ArrowUpRight size={15} /></button></div>
-              <div className="release-grid">
-                {releases.map((release, index) => <article className={`release-card ${index === 1 ? "featured" : ""}`} key={release.title}>
-                  <div className={`release-cover ${release.art}`}><span className="release-index">0{index + 1}</span><span className="cover-groove" /><span className="cover-label">TAHOE<br />PLAN</span><button className="cover-play" aria-label={`Preview ${release.title}`} onClick={() => { selectProject(release.project); setPlaying(true); }}><Play size={16} fill="currentColor" /></button></div>
-                  <div className="release-card-body"><div className="release-card-top"><span>{release.status}</span><small>{release.cat}</small></div><h3>{release.title}</h3><p className="release-artist">{release.artist}</p><div className="release-meta"><span>{release.date}</span><span>{release.tracks.length} TRACKS</span></div><ol className="track-snippet">{release.tracks.map((track, trackIndex) => <li key={track}><span>0{trackIndex + 1}</span>{track}</li>)}</ol><div className="release-actions"><button onClick={() => { selectProject(release.project); setPlaying(true); }}><Play size={13} fill="currentColor" /> Preview</button><a href={`https://www.google.com/search?q=${encodeURIComponent(`${release.artist} ${release.title}`)}`} target="_blank" rel="noreferrer">Buy / stream <ArrowUpRight size={13} /></a></div></div>
-                </article>)}
-              </div>
-            </section>
-
-            <div className="lower-console">
+            <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
+            <div className="lower-console clean-lower">
               <section className="quick-section section-block" aria-labelledby="quick-title">
-                <div className="section-heading compact"><div><span className="section-kicker">Production desk</span><h2 id="quick-title">Quick actions</h2></div></div>
+                <div className="section-heading compact"><div><span className="section-kicker">Actions</span><h2 id="quick-title">Make</h2></div></div>
                 <div className="quick-grid">{quickActions.map(({ title, copy, icon: Icon }, index) => <button key={title} className="quick-card" onClick={() => runQuickAction(title)}><span className="quick-number">0{index + 1}</span><span className="quick-icon"><Icon size={19} /></span><span><strong>{title}</strong><small>{copy}</small></span><ChevronRight size={17} className="quick-arrow" /></button>)}</div>
               </section>
 
               <section className="queue panel-shell" aria-labelledby="queue-title">
-                <div className="section-heading compact"><div><span className="section-kicker">Local processes</span><h2 id="queue-title">Work queue</h2></div><button className={`filter-button ${hideCompleted ? "active" : ""}`} aria-label={hideCompleted ? "Show completed tasks" : "Hide completed tasks"} aria-pressed={hideCompleted} onClick={() => setHideCompleted((value) => !value)}>{hideCompleted ? "SHOW ALL" : "HIDE READY"}</button></div>
-                <div className="queue-list">{visibleQueue.map((task) => { const QueueIcon = task.status === "processing" ? Activity : task.status === "complete" ? Check : Clock3; const label = task.status === "processing" ? "Processing" : task.status === "complete" ? "Ready" : "Waiting"; return <div className="queue-row" key={task.id}><span className={`queue-icon ${task.status}`}><QueueIcon size={16} /></span><span className="queue-copy"><strong>{task.title}</strong><small>{task.detail}</small></span><span className="queue-time">{task.time}</span><span className={`status-tag ${task.status}`}>{label}</span></div>; })}{!visibleQueue.length && <div className="queue-empty"><Check size={20} /><span>No active local tasks.</span></div>}</div>
+                <div className="section-heading compact"><div><span className="section-kicker">Queue</span><h2 id="queue-title">Jobs</h2></div><button className={`filter-button ${hideCompleted ? "active" : ""}`} aria-label={hideCompleted ? "Show completed tasks" : "Hide completed tasks"} aria-pressed={hideCompleted} onClick={() => setHideCompleted((value) => !value)}>{hideCompleted ? "ALL" : "ACTIVE"}</button></div>
+                <div className="queue-list">{visibleQueue.map((task) => { const QueueIcon = task.status === "processing" ? Activity : task.status === "complete" ? Check : Clock3; const label = task.status === "processing" ? "Live" : task.status === "complete" ? "Done" : "Wait"; return <div className="queue-row" key={task.id}><span className={`queue-icon ${task.status}`}><QueueIcon size={16} /></span><span className="queue-copy"><strong>{task.title}</strong><small>{task.detail}</small></span><span className="queue-time">{task.time}</span><span className={`status-tag ${task.status}`}>{label}</span></div>; })}{!visibleQueue.length && <div className="queue-empty"><Check size={20} /><span>No active tasks.</span></div>}</div>
               </section>
             </div>
 
-            <section className="label-modules" aria-label="Label information">
-              <div className="roster-module panel-shell"><div className="module-heading"><div><span className="section-kicker">THE HOUSE</span><h2>Artists & roster</h2></div><Music2 size={20} /></div>{roster.map((artist, index) => <button className="roster-row" key={artist.name} onClick={() => setToast(`${artist.name} profile selected`)}><span className="roster-number">0{index + 1}</span><span><strong>{artist.name}</strong><small>{artist.role} · {artist.note}</small></span><ArrowUpRight size={15} /></button>)}</div>
-              <div className="news-module panel-shell"><div className="module-heading"><div><span className="section-kicker">NOTES FROM THE ROOM</span><h2>News</h2></div><Radio size={20} /></div>{labelNews.map((item) => <button className="news-row" key={item.title} onClick={() => setToast(`${item.title} selected`)}><span>{item.date}</span><strong>{item.title}</strong><small>{item.copy}</small></button>)}</div>
-              <form className="demo-module panel-shell" onSubmit={submitDemo}><div className="module-heading"><div><span className="section-kicker">DEMO DROP</span><h2>Send the next record.</h2></div><Mail size={20} /></div><p>We listen for considered records with movement, space, and a strong point of view. Private links only, please.</p><label htmlFor="demo-email">Your email</label><input id="demo-email" type="email" placeholder="you@label.com" value={demoEmail} onChange={(event) => setDemoEmail(event.target.value)} /><label htmlFor="demo-link">Private listening link</label><input id="demo-link" type="url" placeholder="https://soundcloud.com/..." value={demoLink} onChange={(event) => setDemoLink(event.target.value)} /><button className="demo-submit" type="submit">Submit demo <ArrowUpRight size={15} /></button><small className="form-note">No attachments · One link per submission · We reply within 30 days</small></form>
-            </section>
+            <details className="deep-mode">
+              <summary>Deep mode</summary>
+              <ProductionBrain onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
+              <UploadReleaseFlow onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
+              <BackendPlan onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
+              <BuildTickets onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
+            </details>
 
           </div>
         </div>
