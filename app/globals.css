@@ -18,14 +18,14 @@
   --copper: #cf7b3e;
   --amber: #e7a64d;
   --signal: #c9f34a;
-  --font-ui: "Aptos", "Segoe UI Variable", "Helvetica Neue", sans-serif;
-  --font-display: "Arial Narrow", "Aptos Display", "Segoe UI Variable Display", sans-serif;
-  --font-mono: "Cascadia Mono", "Consolas", monospace;
+  --font-ui: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Roboto Mono", "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; background: var(--ink); }
-body { color: var(--bone); font-family: var(--font-ui); font-size: 14px; overflow: hidden; }
+body { color: var(--bone); font-family: var(--font-ui); font-size: 15px; line-height: 1.5; overflow: hidden; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 button, input, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .4; }
@@ -592,3 +592,119 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 
 
 /* Clean UI pass: studio-first, text-light */
 .clean-briefing{min-height:190px;margin-bottom:16px;grid-template-columns:minmax(0,1fr) 320px;background:linear-gradient(135deg,#0f1215,#15110d);border-color:#ffffff12}.clean-briefing .briefing-copy{padding:26px 28px}.clean-briefing h1{font-size:clamp(44px,7vw,96px);line-height:.8;margin:8px 0 10px;letter-spacing:-.07em}.clean-briefing p{font-size:clamp(16px,2.2vw,22px);color:#f2a65a;margin:0}.clean-briefing .ecosystem-tape{margin-top:22px;display:flex;flex-wrap:wrap;gap:7px}.clean-briefing .ecosystem-tape span{padding:7px 9px;border:1px solid #ffffff18;background:#ffffff07;color:#9fb0ae;font:8px var(--font-mono);letter-spacing:.12em}.clean-briefing .briefing-portrait{min-height:170px;background:#090b0d}.clean-briefing .briefing-portrait img{object-fit:contain;padding:22px}.clean-console{margin-top:0}.clean-lower{margin-top:16px}.deep-mode{margin:18px 0 0;border:1px solid #ffffff12;background:#080a0b}.deep-mode>summary{min-height:48px;padding:0 16px;display:flex;align-items:center;cursor:pointer;color:#8b9697;font:9px var(--font-mono);letter-spacing:.16em;text-transform:uppercase;list-style:none}.deep-mode>summary::-webkit-details-marker{display:none}.deep-mode>summary:after{content:"+";margin-left:auto;color:#f2a65a;font-size:16px}.deep-mode[open]>summary:after{content:"–"}.deep-mode[open]{padding-bottom:14px}.deep-mode[open]>*:not(summary){margin-left:14px;margin-right:14px}.label-intro,.release-section,.label-modules{display:none}.launch-rail{display:none}.quick-section,.queue,.pattern-desk,.arrangement,.phase-panel{border-color:#ffffff10}.quick-card small,.queue-copy small,.context-strip p,.copilot-disclaimer{display:none}.quick-card{min-height:64px}.quick-card span:last-of-type{gap:0}.section-heading h2{font-size:clamp(22px,3vw,34px)}.production-brain p,.backend-plan p,.build-tickets p,.upload-flow p{font-size:11px}.copilot{width:330px}.message p{font-size:9px;line-height:1.45}.message-list{padding:14px}.context-strip{min-height:34px}.composer textarea{min-height:82px}@media(max-width:1160px){.copilot{display:none}.clean-briefing{grid-template-columns:1fr}.clean-briefing .briefing-portrait{display:none}}@media(max-width:760px){.clean-briefing .briefing-copy{padding:22px}.clean-briefing{min-height:auto}.clean-lower{display:block}.queue{margin-top:14px}.deep-mode{display:none}}
+
+
+/* Nastor logo-matched readable typography */
+:root {
+  --font-ui: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Roboto Mono", "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+}
+body { font-size: 15px; line-height: 1.5; letter-spacing: 0; }
+.brand-lockup { width: 172px; height: 41px; }
+.brand-row { min-height: 56px; }
+.nav-item span,
+.profile-copy strong,
+.command-trigger span,
+.invite-button,
+.export-button,
+.primary-action,
+.cancel-button { font-size: 12px; font-weight: 650; letter-spacing: .01em; }
+.profile-copy small,
+.command-trigger kbd,
+.rail-status small,
+.autosave,
+.context-strip p,
+.message p,
+.arrangement-footer p,
+.release-card-body p,
+.queue-copy small,
+.demo-module p { font-size: 10.5px; line-height: 1.55; }
+.nav-label,
+.section-kicker,
+.command-group-label,
+.rail-status span,
+.breadcrumbs > span:first-child,
+.portrait-caption,
+.live-label,
+.analysis-status,
+.track-metrics dt,
+.scope-metrics dt,
+.launch-badge,
+.launch-machine header,
+.launch-machine footer,
+.rack-ruler,
+.rack-footer,
+.pattern-toolbelt button,
+.rack-actions button,
+.intelligence-bar span,
+.coach-strip dt,
+.storage-map code,
+.ticket-grid span { font-size: 9px !important; letter-spacing: .11em; font-weight: 700; }
+.briefing h1,
+.launch-copy h2,
+.record-title h2,
+.hardware-heading h2,
+.section-heading h2,
+.desk-top h2,
+.production-brain h2,
+.backend-plan h2,
+.build-tickets h2,
+.nastor-dna-panel strong,
+.label-intro h2,
+.release-section h2,
+.module-heading h2 { font-family: var(--font-display); font-weight: 900; letter-spacing: .015em; line-height: 1.03; text-transform: uppercase; }
+.briefing h1 { font-size: clamp(34px, 4vw, 58px); max-width: 680px; }
+.launch-copy h2 { font-size: clamp(36px, 4.8vw, 64px); line-height: .98; letter-spacing: .01em; }
+.record-title h2 { font-size: clamp(25px, 3vw, 39px); }
+.hardware-heading h2,
+.section-heading h2 { font-size: 22px; }
+.briefing-copy > p,
+.launch-copy > p,
+.production-brain p,
+.backend-plan p,
+.build-tickets p,
+.nastor-dna-panel p,
+.coach-strip > p,
+.label-intro p { font-size: 13px; line-height: 1.65; color: #c9c0ae; }
+.launch-actions span,
+.brain-grid strong,
+.backend-grid strong,
+.ticket-grid strong,
+.quick-card strong,
+.release-card-body h3,
+.roster-row strong,
+.news-row strong,
+.queue-copy strong,
+.channel-name span,
+.browser-list > button > span:nth-child(2) { font-size: 13px; font-weight: 750; letter-spacing: .01em; }
+.launch-actions small,
+.brain-grid span,
+.backend-grid span,
+.version-strip small,
+.ticket-grid p,
+.browser-list small,
+.channel-name small,
+.coach-strip dd,
+.scope-metrics dd,
+.track-metrics dd,
+.rail-readout span,
+.transport-row,
+.preset-list small,
+.form-note { font-size: 10px; line-height: 1.45; }
+.message-author { font-size: 8px; letter-spacing: .13em; }
+.message p { font-size: 12px; line-height: 1.6; }
+.context-strip span { font-size: 8px; letter-spacing: .1em; }
+.copilot-disclaimer { font-size: 10px; line-height: 1.45; }
+.quick-card small { font-size: 11px; line-height: 1.45; color: #ada695; }
+.ticket-grid button { min-height: 166px; }
+.storage-map code { font-size: 10px !important; line-height: 1.7; }
+@media (max-width: 1380px) { .brand-row .brand-icon { width: 42px; height: 42px; } }
+@media (max-width: 760px) {
+  body { font-size: 14px; }
+  .briefing h1 { font-size: clamp(32px, 10vw, 46px); }
+  .launch-copy h2 { font-size: 38px; }
+  .nav-item span,
+  .quick-card strong,
+  .launch-actions span { font-size: 12px; }
+}
