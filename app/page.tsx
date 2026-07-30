@@ -393,6 +393,30 @@ function LaunchRail({ onLaunch, onOpenStudio }: { onLaunch: (cue: string, name: 
   </section>;
 }
 
+function FLStudioHandoff({ onAsk }: { onAsk: (prompt: string) => void }) {
+  const checklist = [
+    { label: "Session audit", detail: "Confirm BPM, key, arrangement markers, missing samples and risky plugins before the DAW opens." },
+    { label: "Stemz ready", detail: "Group drums, bass, music, vocal and FX so exports are useful for remix, mix and label delivery." },
+    { label: "Next five moves", detail: "Decide what to add, remove, automate, humanize and bounce before touching the project." },
+  ];
+  return (
+    <section className="fl-handoff" aria-labelledby="fl-handoff-title">
+      <div>
+        <span className="section-kicker">FL Studio Web handoff</span>
+        <h2 id="fl-handoff-title">Prep the FLP before opening the DAW.</h2>
+        <p>Audit the project first, then launch FL Studio Web with a focused checklist instead of guessing inside the session.</p>
+      </div>
+      <div className="fl-handoff-grid">
+        {checklist.map((item) => <article key={item.label}><Check size={14} /><strong>{item.label}</strong><p>{item.detail}</p></article>)}
+      </div>
+      <div className="fl-handoff-actions">
+        <button onClick={() => onAsk("Create an FL Studio Web handoff checklist for this FLP: verify tempo/key, samples, plugins, playlist markers, mixer routing, stem groups, mix risks and the next five production decisions before opening https://fl.studio/app/studio.")}>Load checklist <Sparkles size={14} /></button>
+        <a href="https://fl.studio/app/studio" target="_blank" rel="noreferrer">Open FL Studio Web <ArrowUpRight size={14} /></a>
+      </div>
+    </section>
+  );
+}
+
 function PatternDesk({ onAsk }: { onAsk: (prompt: string) => void }) {
   const channelNames = ["Foundation kick", "Shaker pocket", "Log drum", "Vocal air"];
   const devices = ["Kong", "Dr. Octo Rex", "Mimic", "Grain"];
@@ -873,6 +897,7 @@ export default function StudioPage() {
               <Arrangement project={project} playing={playing} progress={progress} onPlay={() => setPlaying((value) => !value)} selected={selectedSection} onSelect={selectSection} onOptions={() => setToast(`${selectedSection} controls selected`)} onReturn={() => selectProject("Find A Way")} />
               <PhaseScope playing={playing} progress={progress} />
             </div>
+            <FLStudioHandoff onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("FL Studio handoff loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
             <div className="lower-console clean-lower">
               <section className="quick-section section-block" aria-labelledby="quick-title">
