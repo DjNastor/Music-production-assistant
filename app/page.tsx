@@ -130,14 +130,14 @@ const labelNews = [
 const quickActions = [
   { title: "Finish MP3 idea", copy: "Upload rough bounce → full production plan", icon: FileAudio },
   { title: "Remix a song", copy: "Upload full track → respectful remix plan", icon: Radio },
-  { title: "Open FLP session", copy: "Upload FLP zip → session audit", icon: FolderKanban },
+  { title: "Open FLP session", copy: "Audit FLP → open FL Studio Web", icon: FolderKanban },
   { title: "Build version pack", copy: "Export full, DJ, radio and stemz", icon: AudioLines },
 ];
 
 const productionIntelligence = [
   { title: "Idea to finished record", status: "MP3 / WAV intake", copy: "Analyze a phone note, loop, beat bounce, or demo; detect tempo/key/section intent; suggest missing drums, bass, chords, vocals, transitions, and mix fixes." },
   { title: "Remix assistant", status: "Respect original", copy: "Map the source song, keep the strongest hook, rebuild rhythm and arrangement in Nastor's lane, then propose club, radio, dub, instrumental, and alternate energy versions." },
-  { title: "FLP / DAW project brain", status: "FL Studio first", copy: "Accept FLP or zipped sessions, inventory tracks/plugins/samples, flag missing files, read arrangement markers, and return a producer task list before touching the mix." },
+  { title: "FLP / DAW project brain", status: "FL Studio first", copy: "Accept FLP or zipped sessions, inventory tracks/plugins/samples, flag missing files, read arrangement markers, return a producer task list, then open FL Studio Web for hands-on edits." },
   { title: "Version generator", status: "Release pack", copy: "Plan full mix, extended DJ mix, radio edit, dub, instrumental, acapella, clean, short social cut, loop pack, and stemz with loudness/export targets." },
   { title: "Stemz intelligence", status: "Grouped delivery", copy: "Separate or organize drums, bass, music, vocals, FX, and master references; name files cleanly for remixers, labels, DJs, and engineers." },
   { title: "Next-level producer", status: "Creative decisions", copy: "Tell Nastor what to add, remove, automate, humanize, arrange, re-record, sidechain, widen, mute, or export next — not just describe the song." },
@@ -389,7 +389,7 @@ function LaunchRail({ onLaunch, onOpenStudio }: { onLaunch: (cue: string, name: 
   const steps = [1,0,0,0,1,0,1,0,1,0,0,1,1,0,1,0];
   return <section className="launch-rail" aria-labelledby="launch-title">
     <div className="launch-copy"><span className="launch-badge"><i /> Browser sketch · local prototype</span><h2 id="launch-title">Start with the next <em>eight bars.</em></h2><p>Choose a direction and Nastor turns it into a focused production brief. Build the idea in your DAW, then return for arrangement, mix, and delivery guidance.</p><div className="launch-actions">{launchTemplates.map((item) => <button key={item.name} onClick={() => onLaunch(item.cue, item.name)}><span>{item.name}</span><small>{item.meta}</small><ChevronRight size={15} /></button>)}</div></div>
-    <div className="launch-machine" aria-label="Eight-bar groove preview"><header><span>NASTOR / LAUNCH RAIL</span><button onClick={onOpenStudio}>Open studio <ArrowUpRight size={13} /></button></header><div className="rail-readout"><strong>8 BAR IDEA</strong><span>120.00</span><span>A MIN</span><span>4 / 4</span></div><div className="step-grid" aria-hidden="true">{steps.map((active,index) => <i key={index} className={`${active ? "active" : ""} ${index % 4 === 0 ? "bar" : ""}`} />)}</div><div className="signal-lanes" aria-hidden="true"><div><span>KICK</span><b style={{width:"86%"}} /></div><div><span>PERC</span><b style={{width:"68%"}} /></div><div><span>VOICE</span><b style={{width:"43%"}} /></div></div><footer><span><i /> READY FOR DIRECTION</span><small>Reason 14 · DAW-neutral guidance</small></footer></div>
+    <div className="launch-machine" aria-label="Eight-bar groove preview"><header><span>NASTOR / LAUNCH RAIL</span><button onClick={onOpenStudio}>Open FL Studio Web <ArrowUpRight size={13} /></button></header><div className="rail-readout"><strong>8 BAR IDEA</strong><span>120.00</span><span>A MIN</span><span>4 / 4</span></div><div className="step-grid" aria-hidden="true">{steps.map((active,index) => <i key={index} className={`${active ? "active" : ""} ${index % 4 === 0 ? "bar" : ""}`} />)}</div><div className="signal-lanes" aria-hidden="true"><div><span>KICK</span><b style={{width:"86%"}} /></div><div><span>PERC</span><b style={{width:"68%"}} /></div><div><span>VOICE</span><b style={{width:"43%"}} /></div></div><footer><span><i /> READY FOR DIRECTION</span><small>FL Studio Web · DAW handoff</small></footer></div>
   </section>;
 }
 
@@ -785,7 +785,7 @@ export default function StudioPage() {
     const prompts: Record<string, string> = {
       "Finish MP3 idea": `Take an MP3 idea for ${activeProject} to the next level: detect tempo/key, choose the strongest 8 bars, write missing parts, arrangement, mix notes and final version outputs.`,
       "Remix a song": "Create a remix workflow: protect the hook, rebuild drums/bass in Nastor style, map sections, choose what to remove, and plan full/DJ/radio/dub versions.",
-      "Open FLP session": "Explain how to inspect an FLP project: channels, samples, plugins, routing, markers, missing files, mix issues, stem groups and the next five production decisions.",
+      "Open FLP session": `Explain how to inspect an FLP project before opening FL Studio Web (https://fl.studio/app/studio): channels, samples, plugins, routing, markers, missing files, mix issues, stem groups and the next five production decisions.`,
       "Build version pack": "Plan exports for full version, DJ extended, radio edit, dub, instrumental, acapella if available, clean edit, social cut and grouped stemz.",
     };
     setInput(prompts[title] ?? title);
