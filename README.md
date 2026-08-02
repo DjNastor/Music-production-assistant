@@ -1,3 +1,5 @@
+**Live app:** https://nastor-ai-studio.vercel.app
+
 # Nastor AI Studio
 
 A polished Phase 1 frontend prototype for an AI-assisted music production workspace. The interface is built with Next.js App Router, React, TypeScript, Tailwind CSS, and Lucide icons.
