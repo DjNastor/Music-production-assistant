@@ -633,6 +633,41 @@ function ProductionBrain({ onAsk, onExport }: { onAsk: (prompt: string) => void;
   );
 }
 
+
+function SimpleHome({ project, activeNav, onUpload, onReference, onCopilot, onExport }: { project: ProjectContext; activeNav: string; onUpload: () => void; onReference: () => void; onCopilot: () => void; onExport: () => void }) {
+  const focusCards = [
+    { title: "Upload source", copy: "Start with an MP3, WAV, FLP package, stems or remix reference.", action: onUpload, icon: Upload },
+    { title: "Reference music", copy: "Compare the track with your local library, Traxsource, Beatport and Splice ideas.", action: onReference, icon: Headphones },
+    { title: "Ask Copilot", copy: "Get the next production decision without opening every tool.", action: onCopilot, icon: Sparkles },
+  ];
+  return (
+    <section className="simple-home" aria-labelledby="simple-home-title">
+      <div className="simple-hero">
+        <span className="section-kicker">{activeNav === "Home" ? "Start here" : activeNav}</span>
+        <h1 id="simple-home-title">One clear next move.</h1>
+        <p>Keep the studio focused: upload the source, choose the mission, get producer decisions, then export the right versions.</p>
+        <div className="simple-actions">
+          <button onClick={onUpload}><Upload size={17} /> Start project</button>
+          <button onClick={onCopilot}><Sparkles size={17} /> Ask Copilot</button>
+        </div>
+      </div>
+      <aside className="simple-project" aria-label="Current project">
+        <span>Current project</span>
+        <strong>{project.title}</strong>
+        <dl>
+          <div><dt>BPM</dt><dd>{project.bpm}</dd></div>
+          <div><dt>Key</dt><dd>{project.musicalKey}</dd></div>
+          <div><dt>Goal</dt><dd>Release pack</dd></div>
+        </dl>
+        <button onClick={onExport}>Open export options <ChevronRight size={15} /></button>
+      </aside>
+      <div className="simple-card-grid">
+        {focusCards.map(({ title, copy, action, icon: Icon }) => <button key={title} onClick={action} className="simple-card"><Icon size={19} /><span><strong>{title}</strong><small>{copy}</small></span><ChevronRight size={16} /></button>)}
+      </div>
+    </section>
+  );
+}
+
 function PhaseScope({ playing, progress }: { playing: boolean; progress: number }) {
   return (
     <section className="phase-panel panel-shell" aria-labelledby="phase-title">
@@ -892,24 +927,22 @@ export default function StudioPage() {
 
         <div className="canvas-scroll">
           <div className="canvas-inner">
-            <Briefing context={context} activeNav={activeNav} />
-            <div className="record-console clean-console">
-              <Arrangement project={project} playing={playing} progress={progress} onPlay={() => setPlaying((value) => !value)} selected={selectedSection} onSelect={selectSection} onOptions={() => setToast(`${selectedSection} controls selected`)} onReturn={() => selectProject("Find A Way")} />
-              <PhaseScope playing={playing} progress={progress} />
-            </div>
-            <FLStudioHandoff onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("FL Studio handoff loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
-            <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
-            <div className="lower-console clean-lower">
-              <section className="quick-section section-block" aria-labelledby="quick-title">
-                <div className="section-heading compact"><div><span className="section-kicker">Actions</span><h2 id="quick-title">Make</h2></div></div>
-                <div className="quick-grid">{quickActions.map(({ title, copy, icon: Icon }, index) => <button key={title} className="quick-card" onClick={() => runQuickAction(title)}><span className="quick-number">0{index + 1}</span><span className="quick-icon"><Icon size={19} /></span><span><strong>{title}</strong><small>{copy}</small></span><ChevronRight size={17} className="quick-arrow" /></button>)}</div>
-              </section>
+            <SimpleHome project={project} activeNav={activeNav} onUpload={() => runQuickAction("Finish MP3 idea")} onReference={() => { setActiveNav("Reference"); setInput("Build a focused Afro House reference plan using my local library, Traxsource, Beatport and Splice. Keep it original and practical."); setToast("Reference plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onCopilot={() => { setActiveNav("AI Assistant"); setInput("What is the single best next production move for this project?"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
 
-              <section className="queue panel-shell" aria-labelledby="queue-title">
-                <div className="section-heading compact"><div><span className="section-kicker">Queue</span><h2 id="queue-title">Jobs</h2></div><button className={`filter-button ${hideCompleted ? "active" : ""}`} aria-label={hideCompleted ? "Show completed tasks" : "Hide completed tasks"} aria-pressed={hideCompleted} onClick={() => setHideCompleted((value) => !value)}>{hideCompleted ? "ALL" : "ACTIVE"}</button></div>
-                <div className="queue-list">{visibleQueue.map((task) => { const QueueIcon = task.status === "processing" ? Activity : task.status === "complete" ? Check : Clock3; const label = task.status === "processing" ? "Live" : task.status === "complete" ? "Done" : "Wait"; return <div className="queue-row" key={task.id}><span className={`queue-icon ${task.status}`}><QueueIcon size={16} /></span><span className="queue-copy"><strong>{task.title}</strong><small>{task.detail}</small></span><span className="queue-time">{task.time}</span><span className={`status-tag ${task.status}`}>{label}</span></div>; })}{!visibleQueue.length && <div className="queue-empty"><Check size={20} /><span>No active tasks.</span></div>}</div>
-              </section>
-            </div>
+            <section className="queue simple-queue panel-shell" aria-labelledby="queue-title">
+              <div className="section-heading compact"><div><span className="section-kicker">Queue</span><h2 id="queue-title">Recent jobs</h2></div><button className={`filter-button ${hideCompleted ? "active" : ""}`} aria-label={hideCompleted ? "Show completed tasks" : "Hide completed tasks"} aria-pressed={hideCompleted} onClick={() => setHideCompleted((value) => !value)}>{hideCompleted ? "ALL" : "ACTIVE"}</button></div>
+              <div className="queue-list">{visibleQueue.slice(0, 3).map((task) => { const QueueIcon = task.status === "processing" ? Activity : task.status === "complete" ? Check : Clock3; const label = task.status === "processing" ? "Live" : task.status === "complete" ? "Done" : "Wait"; return <div className="queue-row" key={task.id}><span className={`queue-icon ${task.status}`}><QueueIcon size={16} /></span><span className="queue-copy"><strong>{task.title}</strong><small>{task.detail}</small></span><span className={`status-tag ${task.status}`}>{label}</span></div>; })}{!visibleQueue.length && <div className="queue-empty"><Check size={20} /><span>No active tasks.</span></div>}</div>
+            </section>
+
+            <details className="studio-tools">
+              <summary>Show studio tools</summary>
+              <div className="record-console clean-console">
+                <Arrangement project={project} playing={playing} progress={progress} onPlay={() => setPlaying((value) => !value)} selected={selectedSection} onSelect={selectSection} onOptions={() => setToast(`${selectedSection} controls selected`)} onReturn={() => selectProject("Find A Way")} />
+                <PhaseScope playing={playing} progress={progress} />
+              </div>
+              <FLStudioHandoff onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("FL Studio handoff loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
+              <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
+            </details>
 
             <details className="deep-mode">
               <summary>Deep mode</summary>
