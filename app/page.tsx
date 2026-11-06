@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import ComposerWorkbench from "./components/ComposerWorkbench";
 import {
   Activity,
   AudioLines,
@@ -927,6 +928,14 @@ export default function StudioPage() {
 
         <div className="canvas-scroll">
           <div className="canvas-inner">
+            {activeNav === "Studio" && (
+              <ComposerWorkbench projectName={project.title} onAsk={(prompt) => {
+                setInput(prompt);
+                setActiveNav("AI Assistant");
+                setToast("Gopher handoff opened in Copilot — copy it into FL Studio when ready");
+                if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true);
+              }} />
+            )}
             <SimpleHome project={project} activeNav={activeNav} onUpload={() => runQuickAction("Finish MP3 idea")} onReference={() => { setActiveNav("Reference"); setInput("Build a focused Afro House reference plan using my local library, Traxsource, Beatport and Splice. Keep it original and practical."); setToast("Reference plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onCopilot={() => { setActiveNav("AI Assistant"); setInput("What is the single best next production move for this project?"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
 
             <section className="queue simple-queue panel-shell" aria-labelledby="queue-title">
