@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { AudioLines, CheckCircle2, Download, KeyRound, LoaderCircle, Music2, ShieldCheck, Upload } from "lucide-react";
+import { AudioLines, CheckCircle2, Download, KeyRound, LoaderCircle, Music2, ShieldCheck, Sparkles, Upload } from "lucide-react";
 import styles from "./FadrStemLab.module.css";
 
 type JsonRecord = Record<string, unknown>;
