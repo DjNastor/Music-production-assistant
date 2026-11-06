@@ -307,6 +307,15 @@ export default function ProducerWorkspace() {
     setMode(next);
     if (next === "collab") setRightPanel("collab");
   }
+  function openEditor(next: Panel) {
+    setMode("studio");
+    setPanel(next);
+    window.requestAnimationFrame(() => {
+      const editor = document.getElementById("producer-editor");
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      editor?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    });
+  }
   const studioPane = (
     <div className={styles.centerArea}>
       <section className={styles.focusBar} aria-label="Start producing">
@@ -319,8 +328,8 @@ export default function ProducerWorkspace() {
           </div>
         </div>
         <div className={styles.focusActions}>
-          <button className={styles.focusPrimary} onClick={() => setPanel("channel")} aria-pressed={panel === "channel"}><Layers3 size={17}/> Build a beat</button>
-          <button onClick={() => setPanel("piano")} aria-pressed={panel === "piano"}><Music2 size={17}/> Write chords</button>
+          <button className={styles.focusPrimary} onClick={() => openEditor("channel")} aria-pressed={panel === "channel"}><Layers3 size={17}/> Build a beat</button>
+          <button onClick={() => openEditor("piano")} aria-pressed={panel === "piano"}><Music2 size={17}/> Write chords</button>
           <button onClick={() => switchMode("collab")}><Users size={17}/> Work together</button>
         </div>
       </section>
@@ -371,7 +380,7 @@ export default function ProducerWorkspace() {
         </div>
       </section>
 
-      <section className={styles.workPanel} aria-label="Production workbench tools">
+      <section id="producer-editor" className={styles.workPanel} aria-label="Production workbench tools">
         <div className={styles.editorTabs} role="tablist" aria-label="Production editor">
           <button role="tab" aria-selected={panel === "channel"} className={panel === "channel" ? styles.activeEditorTab : ""} onClick={() => setPanel("channel")}><Layers3 size={15}/> Beat maker</button>
           <button role="tab" aria-selected={panel === "piano"} className={panel === "piano" ? styles.activeEditorTab : ""} onClick={() => setPanel("piano")}><Music2 size={15}/> Piano roll</button>
