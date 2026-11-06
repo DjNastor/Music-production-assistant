@@ -929,7 +929,7 @@ export default function StudioPage() {
         <div className="canvas-scroll">
           <div className="canvas-inner">
             {activeNav === "Studio" && (
-              <ComposerWorkbench projectName={project.title} onAsk={(prompt) => {
+              <ComposerWorkbench key={project.title} projectName={project.title} onAsk={(prompt) => {
                 setInput(prompt);
                 setActiveNav("AI Assistant");
                 setToast("Gopher handoff opened in Copilot — copy it into FL Studio when ready");
