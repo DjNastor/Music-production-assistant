@@ -18,7 +18,7 @@ function safeEquals(received: string, expected: string) {
   return first.length === second.length && timingSafeEqual(first, second);
 }
 function configured() {
-  return Boolean(process.env.FADR_API_KEY && process.env.FADR_STUDIO_ACCESS_TOKEN);
+  return Boolean(process.env.FADR_API_KEY && (process.env.FADR_STUDIO_ACCESS_TOKEN?.length ?? 0) >= 32);
 }
 function canAccess(request: NextRequest) {
   const expected = process.env.FADR_STUDIO_ACCESS_TOKEN;
