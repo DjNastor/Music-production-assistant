@@ -29,3 +29,9 @@
 @media(max-width:1200px){.focusBar{align-items:flex-start;flex-direction:column;gap:13px}.focusActions{justify-content:flex-start}}
 @media(max-width:1050px){.mainGrid.noBrowser{grid-template-columns:minmax(0,1fr)}.mainGrid.noAssistant:not(.noBrowser){grid-template-columns:176px minmax(0,1fr)}.mainGrid.noBrowser.noAssistant{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:700px){.focusBar{padding:17px 15px;margin:0}.focusActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.shell .focusActions button{white-space:normal;min-height:45px;padding:10px 9px}.shell .focusActions button:last-child{grid-column:1/-1}.headerActions{gap:6px}.shell .headerActions button{min-height:34px;padding:7px 8px;font-size:10px}.shell .headerActions .exportCTA{font-size:10px}.mainGrid.noBrowser,.mainGrid.noAssistant,.mainGrid.noBrowser.noAssistant{display:block}.mainGrid.noBrowser .browser{display:none}}
+
+/* User-supplied album-style portrait: restrained, low-noise visual identity. */
+.focusIntro{display:flex;align-items:center;gap:16px}
+.focusCopy{min-width:0}
+.focusArtwork{width:76px;height:76px;flex:0 0 76px;object-fit:cover;border-radius:12px;border:1px solid rgba(244,203,132,.33);box-shadow:0 10px 22px rgba(0,0,0,.28)}
+@media(max-width:700px){.focusIntro{gap:12px}.focusArtwork{width:58px;height:58px;flex-basis:58px}.focusIntro h1{font-size:21px}.focusIntro p{font-size:11px}}
