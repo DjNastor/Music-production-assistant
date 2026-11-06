@@ -6,7 +6,7 @@ import {
   Activity, AudioLines, Bot, Check, ChevronLeft, ChevronRight,
   ClipboardList, Copy, Download, FileAudio, FileMusic, Folder,
   FolderOpen, Headphones, Layers3, ListMusic, Menu, MessageSquare,
-  Music2, Pause, Play, Plus, Search, Send,
+  Music2, Pause, Play, Plus, Search,
   SlidersHorizontal, Sparkles, Trash2, Upload, Users, X,
 } from "lucide-react";
 import ComposerWorkbench from "./ComposerWorkbench";
@@ -118,6 +118,7 @@ export default function ProducerWorkspace() {
   const [promptTask, setPromptTask] = useState("Arrangement review");
   const [assetQuery, setAssetQuery] = useState("");
   const [assets, setAssets] = useState<Asset[]>([]);
+  const liveAssetsRef = useRef<Asset[]>([]);
   const [activeAsset, setActiveAsset] = useState<string | null>(null);
   const [pattern, setPattern] = useState<boolean[][]>(initialDrums);
   const [drumPlaying, setDrumPlaying] = useState(false);
@@ -131,14 +132,17 @@ export default function ProducerWorkspace() {
   const drumTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as unknown;
-        if (isWorkspaceState(parsed)) setSession(parsed);
-      }
-    } catch { /* Unusable local data is ignored, rather than crashing the studio. */ }
-    setHydrated(true);
+    const hydration = window.setTimeout(() => {
+      try {
+        const saved = window.localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as unknown;
+          if (isWorkspaceState(parsed)) setSession(parsed);
+        }
+      } catch { /* Unusable local data is ignored, rather than crashing the studio. */ }
+      setHydrated(true);
+    }, 0);
+    return () => window.clearTimeout(hydration);
   }, []);
   useEffect(() => {
     if (hydrated) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -186,9 +190,10 @@ export default function ProducerWorkspace() {
       drumTimer.current = null;
     };
   }, [drumPlaying, pattern, session.bpm]);
+  useEffect(() => { liveAssetsRef.current = assets; }, [assets]);
   useEffect(() => () => {
     if (audioRef.current) void audioRef.current.close();
-    for (const asset of assets) if (asset.url) URL.revokeObjectURL(asset.url);
+    for (const asset of liveAssetsRef.current) if (asset.url) URL.revokeObjectURL(asset.url);
   }, []); // File URLs are also released by the remove-asset action.
 
   function updateSession(change: Partial<WorkspaceState>) {
