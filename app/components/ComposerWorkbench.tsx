@@ -17,7 +17,7 @@ const SCALES = {
 } as const;
 type ScaleName = keyof typeof SCALES;
 type PromptTask = "scale" | "quantize" | "organize" | "arrange" | "mix";
-const PITCHES = Array.from({ length: 36 }, (_, index) => 83 - index);
+const PITCHES = Array.from({ length: 48 }, (_, index) => 83 - index);
 const STEPS = Array.from({ length: 64 }, (_, index) => index);
 const SESSION_KEY = "nastor-composer-workbench-v1";
 
@@ -41,11 +41,12 @@ function degreePitch(root: number, scale: readonly number[], degree: number) {
 }
 function chordProgression(root: number, scale: readonly number[], alternate: boolean): WorkbenchNote[] {
   const minor = scale[2] === 3;
+  const harmonicScale = scale.length === 5 ? [0, 2, 3, 5, 7, 8, 10] : scale;
   const degrees = minor
     ? alternate ? [0, 3, 6, 4] : [0, 5, 2, 6]
     : alternate ? [0, 3, 4, 0] : [0, 4, 5, 3];
   return degrees.flatMap((degree, bar) => [0, 2, 4].map((offset, voice) => ({
-    pitch: degreePitch(root, scale, degree + offset),
+    pitch: nearestScalePitch(degreePitch(root, harmonicScale, degree + offset), root, scale),
     start: bar * 16,
     length: 15,
     velocity: voice === 0 ? 95 : 81,
@@ -214,7 +215,7 @@ export default function ComposerWorkbench({
       return current.map((note, index) => {
         if (index % 3 !== 2) return { ...note };
         const pitch = note.pitch >= 72 ? note.pitch - 12 : note.pitch + 12;
-        return { ...note, pitch: Math.max(48, Math.min(83, nearestScalePitch(pitch, root, scale))), velocity: 73 };
+        return { ...note, pitch: Math.max(36, Math.min(83, nearestScalePitch(pitch, root, scale))), velocity: 73 };
       });
     });
     setNotice("A new octave-voicing variation is ready. Compare it with the original.");
@@ -237,6 +238,7 @@ export default function ComposerWorkbench({
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    if (file.size > 3_000_000) { setNotice("Please import a MIDI or template file smaller than 3 MB."); return; }
     try {
       if (file.name.toLowerCase().endsWith(".json")) {
         const data = JSON.parse(await file.text()) as { notes?: WorkbenchNote[]; root?: number; scaleName?: ScaleName; bpm?: number };
@@ -250,7 +252,7 @@ export default function ComposerWorkbench({
         setNotice("Saved harmony template imported.");
       } else {
         const decoded = decodeMidi(await file.arrayBuffer());
-        if (!decoded.notes.length) throw new Error("No notes in the first four bars within MIDI pitches 36–95");
+        if (!decoded.notes.length) throw new Error("No notes in the first four bars within MIDI pitches C2–B5");
         setNotes(decoded.notes);
         if (decoded.bpm !== null) setBpm(Math.max(60, Math.min(180, decoded.bpm)));
         setNotice("Imported " + decoded.notes.length + " MIDI notes into the four-bar grid. Other bars are not loaded.");
@@ -376,7 +378,7 @@ export default function ComposerWorkbench({
         <div className={styles.promptActions}>
           <span>Gopher is opened and authorized separately inside FL Studio. No direct DAW control is connected here.</span>
           <div>
-            <button type="button" onClick={exportScript}><FileMusic size={15} /> Download FL script</button>
+            <button type="button" onClick={exportScript}><FileMusic size={15} /> Download scale script</button>
             <button type="button" onClick={copyPrompt}><Copy size={15} /> Copy prompt</button>
             <button type="button" className={styles.primary} onClick={() => onAsk(prompt)}><SlidersHorizontal size={15} /> Send to Copilot</button>
           </div>
