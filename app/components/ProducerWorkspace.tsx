@@ -311,9 +311,12 @@ export default function ProducerWorkspace() {
     <div className={styles.centerArea}>
       <section className={styles.focusBar} aria-label="Start producing">
         <div className={styles.focusIntro}>
-          <span className={styles.eyebrow}>YOUR CREATIVE WORKSPACE</span>
-          <h1>Make your next record.</h1>
-          <p>Choose where to begin. The advanced tools are here when you need them.</p>
+          <Image src="/brand/nastor-portrait-art.svg" width={76} height={76} alt="Illustrated producer portrait" className={styles.focusArtwork} />
+          <div className={styles.focusCopy}>
+            <span className={styles.eyebrow}>YOUR CREATIVE WORKSPACE</span>
+            <h1>Make your next record.</h1>
+            <p>Choose where to begin. The advanced tools are here when you need them.</p>
+          </div>
         </div>
         <div className={styles.focusActions}>
           <button className={styles.focusPrimary} onClick={() => setPanel("channel")} aria-pressed={panel === "channel"}><Layers3 size={17}/> Build a beat</button>
