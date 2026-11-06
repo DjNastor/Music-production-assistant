@@ -1,6 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import FadrStemLab from "./FadrStemLab";
+import { rememberProject } from "../lib/producer-projects";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity, AudioLines, Bot, Check, ChevronLeft, ChevronRight,
@@ -17,13 +20,14 @@ type Clip = { id: string; lane: Lane; start: number; length: number; name: strin
 type LaneState = { volume: number; muted: boolean; solo: boolean };
 type Task = { id: string; message: string; done: boolean; clipId?: string };
 type WorkspaceState = {
+  sessionId?: string;
   bpm: number; root: string; mode: string; clips: Clip[]; lanes: Record<Lane, LaneState>;
   tasks: Task[]; notes: string; sessionName: string; inviteDrafts: { id: string; email: string; role: string }[];
 };
 type Asset = { id: string; name: string; type: string; size: number; url?: string };
 type Panel = "channel" | "piano" | "mixer";
 type RightPanel = "copilot" | "collab";
-type TopMode = "studio" | "assets" | "collab";
+type TopMode = "studio" | "assets" | "collab" | "fadr";
 
 const LANES: { name: Lane; color: string; icon: string }[] = [
   { name: "Drums", color: "#c08bff", icon: "◉" },
@@ -140,12 +144,16 @@ export default function ProducerWorkspace() {
           if (isWorkspaceState(parsed)) setSession(parsed);
         }
       } catch { /* Unusable local data is ignored, rather than crashing the studio. */ }
+      const requestedView = new URL(window.location.href).searchParams.get("view");
+      if (requestedView === "assets" || requestedView === "collab" || requestedView === "fadr") {
+        setMode(requestedView);
+      }
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(hydration);
   }, []);
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    if (hydrated) rememberProject(session);
   }, [session, hydrated]);
 
   useEffect(() => {
@@ -428,6 +436,7 @@ export default function ProducerWorkspace() {
   return <main className={styles.shell}>
     <header className={styles.topBar}>
       <div className={styles.brand}><Image src="/brand/nastor-waveform-mark.svg" alt="" width={34} height={34} /><div><strong>NASTOR <span>AI STUDIO</span></strong><small>Production room · Preview</small></div></div>
+      <Link href="/" className={styles.legacyLink}>← Projects</Link>
       <nav className={styles.mainNav} aria-label="Main workspace">
         <button className={mode === "studio" ? styles.activeNav : ""} onClick={() => switchMode("studio")}>Make music</button>
         <button className={mode === "assets" ? styles.activeNav : ""} onClick={() => switchMode("assets")}>My sounds</button>
@@ -462,6 +471,7 @@ export default function ProducerWorkspace() {
         <button className={styles.browserItem} onClick={()=>{switchMode("studio");setPanel("channel")}}><Layers3 size={16}/> Beat maker</button>
         <button className={styles.browserItem} onClick={()=>{switchMode("studio");setPanel("piano")}}><FileMusic size={16}/> Chords & MIDI</button>
         <button className={styles.browserItem} onClick={()=>switchMode("assets")}><AudioLines size={16}/> My sounds <span>{assets.length}</span></button>
+        <button className={styles.browserItem} onClick={()=>switchMode("fadr")}><Sparkles size={16}/> Fadr stem separation</button>
         <button className={styles.browserItem} onClick={()=>switchMode("collab")}><Users size={16}/> Collaborators <span>{session.inviteDrafts.length}</span></button>
         <div className={styles.browserDivider}/>
         <strong className={styles.browserGroup}>SESSION CONTROL</strong>
@@ -471,9 +481,12 @@ export default function ProducerWorkspace() {
         <div className={styles.browserFoot}><span>SESSION / PROTOTYPE</span><p>Playlist arrangement is an editable plan. File sharing, real analysis and FL Studio remote control require connected services.</p><a href="/legacy">See original layout</a></div>
       </aside>
 
-      {mode === "studio" ? studioPane : mode === "assets" ? <section className={styles.fullPanel}>
+      {mode === "studio" ? studioPane : mode === "fadr" ? <section className={styles.fullPanel}><FadrStemLab /></section> : mode === "assets" ? <section className={styles.fullPanel}>
         <div className={styles.panelHeading}><div><span className={styles.eyebrow}>ASSET VAULT · LOCAL PREVIEW</span><h2>Sounds, stems and references</h2></div>
-          <button onClick={()=>filePicker.current?.click()}><Upload size={15}/> Add files</button></div>
+          <div className={styles.inlineActions}>
+            <button onClick={()=>switchMode("fadr")}><Sparkles size={15}/> Separate stems with Fadr</button>
+            <button onClick={()=>filePicker.current?.click()}><Upload size={15}/> Add files</button>
+          </div></div>
         <p className={styles.helpText}>Choose your own WAV, MP3, MIDI, FLP or ZIP files. This view holds them only while the browser tab stays open. They are not uploaded, backed up or processed by an AI service.</p>
         <div className={styles.assetSearch}><Search size={17}/><input value={assetQuery} onChange={e=>setAssetQuery(e.target.value)} placeholder="Search selected files" aria-label="Search selected files"/></div>
         <div className={styles.assetList}>{availableAssets.length ? availableAssets.map(asset => <button key={asset.id} className={activeAsset === asset.id ? styles.assetActive : styles.assetItem} onClick={()=>setActiveAsset(asset.id)}>
