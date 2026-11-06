@@ -110,7 +110,7 @@ export default function ProducerWorkspace() {
   const [rightPanel, setRightPanel] = useState<RightPanel>("copilot");
   const [mode, setMode] = useState<TopMode>("studio");
   const [mobileBrowser, setMobileBrowser] = useState(false);
-  const [showRight, setShowRight] = useState(true);
+  const [showRight, setShowRight] = useState(false);
   const [status, setStatus] = useState("This is a local production planning session. Your original files are never changed.");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("Co-producer");
@@ -309,12 +309,24 @@ export default function ProducerWorkspace() {
   }
   const studioPane = (
     <div className={styles.centerArea}>
+      <section className={styles.focusBar} aria-label="Start producing">
+        <div className={styles.focusIntro}>
+          <span className={styles.eyebrow}>YOUR CREATIVE WORKSPACE</span>
+          <h1>Make your next record.</h1>
+          <p>Choose where to begin. The advanced tools are here when you need them.</p>
+        </div>
+        <div className={styles.focusActions}>
+          <button className={styles.focusPrimary} onClick={() => setPanel("channel")} aria-pressed={panel === "channel"}><Layers3 size={17}/> Build a beat</button>
+          <button onClick={() => setPanel("piano")} aria-pressed={panel === "piano"}><Music2 size={17}/> Write chords</button>
+          <button onClick={() => switchMode("collab")}><Users size={17}/> Work together</button>
+        </div>
+      </section>
       <section className={styles.playlistPanel} aria-label="Producer Playlist">
         <div className={styles.panelHeading}>
-          <div><span className={styles.eyebrow}>ARRANGEMENT / SESSION MAP</span><h2>Playlist <span className={styles.subTitle}>· 32-bar production canvas</span></h2></div>
+          <div><span className={styles.eyebrow}>ARRANGE YOUR TRACK</span><h2>Playlist <span className={styles.subTitle}>· 32 bars</span></h2></div>
           <div className={styles.inlineActions}>
             <span className={styles.mutedTag}>{summary.clips} clips</span>
-            <button title="Export session manifest" onClick={exportHandoff}><Download size={15} /> Handoff</button>
+            <button title="Export session manifest" onClick={exportHandoff}><Download size={15} /> Save brief</button>
           </div>
         </div>
         <div className={styles.timelineScroll}>
@@ -358,9 +370,9 @@ export default function ProducerWorkspace() {
 
       <section className={styles.workPanel} aria-label="Production workbench tools">
         <div className={styles.editorTabs} role="tablist" aria-label="Production editor">
-          <button role="tab" aria-selected={panel === "channel"} className={panel === "channel" ? styles.activeEditorTab : ""} onClick={() => setPanel("channel")}><Layers3 size={15}/> Channel rack</button>
-          <button role="tab" aria-selected={panel === "piano"} className={panel === "piano" ? styles.activeEditorTab : ""} onClick={() => setPanel("piano")}><Music2 size={15}/> Piano roll · MIDI</button>
-          <button role="tab" aria-selected={panel === "mixer"} className={panel === "mixer" ? styles.activeEditorTab : ""} onClick={() => setPanel("mixer")}><SlidersHorizontal size={15}/> Mixer</button>
+          <button role="tab" aria-selected={panel === "channel"} className={panel === "channel" ? styles.activeEditorTab : ""} onClick={() => setPanel("channel")}><Layers3 size={15}/> Beat maker</button>
+          <button role="tab" aria-selected={panel === "piano"} className={panel === "piano" ? styles.activeEditorTab : ""} onClick={() => setPanel("piano")}><Music2 size={15}/> Piano roll</button>
+          <button role="tab" aria-selected={panel === "mixer"} className={panel === "mixer" ? styles.activeEditorTab : ""} onClick={() => setPanel("mixer")}><SlidersHorizontal size={15}/> Mix plan</button>
         </div>
         {panel === "channel" && <div className={styles.editorBody}>
           <div className={styles.editorIntro}><strong>Pattern 01 · Afro House sketch</strong><span>Synthesized preview, not a rendered WAV or sample player</span></div>
@@ -403,25 +415,26 @@ export default function ProducerWorkspace() {
 
   return <main className={styles.shell}>
     <header className={styles.topBar}>
-      <div className={styles.brand}><Image src="/brand/nastor-waveform-mark.svg" alt="" width={34} height={34} /><div><strong>NASTOR <span>AI STUDIO</span></strong><small>Producer Workspace · Beta</small></div></div>
+      <div className={styles.brand}><Image src="/brand/nastor-waveform-mark.svg" alt="" width={34} height={34} /><div><strong>NASTOR <span>AI STUDIO</span></strong><small>Production room · Preview</small></div></div>
       <nav className={styles.mainNav} aria-label="Main workspace">
-        <button className={mode === "studio" ? styles.activeNav : ""} onClick={() => switchMode("studio")}>Studio</button>
-        <button className={mode === "assets" ? styles.activeNav : ""} onClick={() => switchMode("assets")}>Assets</button>
-        <button className={mode === "collab" ? styles.activeNav : ""} onClick={() => switchMode("collab")}>Collaboration</button>
+        <button className={mode === "studio" ? styles.activeNav : ""} onClick={() => switchMode("studio")}>Make music</button>
+        <button className={mode === "assets" ? styles.activeNav : ""} onClick={() => switchMode("assets")}>My sounds</button>
+        <button className={mode === "collab" ? styles.activeNav : ""} onClick={() => switchMode("collab")}>Collaborate</button>
       </nav>
       <div className={styles.headerActions}>
-        <span className={styles.saveIndicator}><Check size={13}/> Local save</span>
-        <a href="/legacy" className={styles.legacyLink}>Previous layout</a>
-        <button onClick={exportHandoff}><Download size={16}/> Export</button>
+        <span className={styles.saveIndicator}><Check size={13}/> Saved here</span>
+        <button aria-pressed={mobileBrowser} aria-label={mobileBrowser ? "Hide project browser" : "Show project browser"} title="Browse sounds and projects" onClick={() => setMobileBrowser(value => !value)}><FolderOpen size={16}/> Browser</button>
+        <button aria-pressed={showRight} aria-label={showRight ? "Hide studio assistant" : "Show studio assistant"} onClick={() => {setRightPanel("copilot");setShowRight(value => !value);}}><Sparkles size={16}/> Assistant</button>
+        <button className={styles.exportCTA} onClick={exportHandoff}><Download size={16}/> Export brief</button>
       </div>
     </header>
 
     <div className={styles.transport}>
-      <button className={styles.mobileMenu} aria-label="Toggle asset browser" onClick={() => setMobileBrowser(!mobileBrowser)}><Menu size={19}/></button>
+      <button className={styles.mobileMenu} aria-label={mobileBrowser ? "Close browser" : "Open browser"} onClick={() => setMobileBrowser(!mobileBrowser)}><Menu size={19}/></button>
       <label className={styles.projectTitle}>PROJECT <input aria-label="Project name" value={session.sessionName} onChange={(event) => chooseProject(event.target.value)} maxLength={90}/></label>
       <div className={styles.transportControls}>
         <button title="Return to bar one" aria-label="Go to start" onClick={() => {setBarPlayhead(1);setArrangePlaying(false);}}><ChevronLeft size={16}/></button>
-        <button className={styles.transportPlay} onClick={() => setArrangePlaying(!arrangePlaying)}>{arrangePlaying ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}{arrangePlaying ? "Pause" : "Preview"}</button>
+        <button className={styles.transportPlay} onClick={() => setArrangePlaying(!arrangePlaying)}>{arrangePlaying ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}{arrangePlaying ? "Pause" : "Scan bars"}</button>
         <span className={styles.barCounter}>BAR {String(barPlayhead).padStart(2,"0")} / 32</span>
       </div>
       <label>BPM <input aria-label="Session tempo" type="number" min="50" max="220" value={session.bpm} onChange={e=>updateSession({bpm:Math.max(50,Math.min(220,Number(e.target.value)||120))})}/></label>
@@ -430,20 +443,20 @@ export default function ProducerWorkspace() {
       <span className={styles.transportWarning}>Arrangement preview moves the playhead; actual music plays in editor tools.</span>
     </div>
 
-    <div className={styles.mainGrid}>
+    <div className={[styles.mainGrid, !mobileBrowser ? styles.noBrowser : "", !showRight ? styles.noAssistant : ""].filter(Boolean).join(" ")}>
       <aside className={[styles.browser, mobileBrowser?styles.mobileBrowser:""].join(" ")} aria-label="Project and sound browser">
         <div className={styles.browserTitle}><strong><Folder size={16}/> PROJECT BROWSER</strong><button aria-label="Close browser" onClick={() => setMobileBrowser(false)}><X size={16}/></button></div>
-        <button className={styles.browserItem} onClick={()=>switchMode("studio")}><ListMusic size={16}/> Playlist & scenes <span>{summary.clips}</span></button>
-        <button className={styles.browserItem} onClick={()=>{switchMode("studio");setPanel("channel")}}><Layers3 size={16}/> Pattern library</button>
-        <button className={styles.browserItem} onClick={()=>{switchMode("studio");setPanel("piano")}}><FileMusic size={16}/> MIDI & chord DNA</button>
-        <button className={styles.browserItem} onClick={()=>switchMode("assets")}><AudioLines size={16}/> Sounds & samples <span>{assets.length}</span></button>
-        <button className={styles.browserItem} onClick={()=>switchMode("collab")}><Users size={16}/> Producers & versions <span>{session.inviteDrafts.length}</span></button>
+        <button className={styles.browserItem} onClick={()=>switchMode("studio")}><ListMusic size={16}/> Arrangement <span>{summary.clips}</span></button>
+        <button className={styles.browserItem} onClick={()=>{switchMode("studio");setPanel("channel")}}><Layers3 size={16}/> Beat maker</button>
+        <button className={styles.browserItem} onClick={()=>{switchMode("studio");setPanel("piano")}}><FileMusic size={16}/> Chords & MIDI</button>
+        <button className={styles.browserItem} onClick={()=>switchMode("assets")}><AudioLines size={16}/> My sounds <span>{assets.length}</span></button>
+        <button className={styles.browserItem} onClick={()=>switchMode("collab")}><Users size={16}/> Collaborators <span>{session.inviteDrafts.length}</span></button>
         <div className={styles.browserDivider}/>
         <strong className={styles.browserGroup}>SESSION CONTROL</strong>
-        <button className={styles.browserItem} onClick={()=>{setRightPanel("copilot");setShowRight(true)}}><Bot size={16}/> Production Copilot</button>
-        <button className={styles.browserItem} onClick={()=>{setRightPanel("collab");setShowRight(true)}}><MessageSquare size={16}/> Comments & tasks <span>{summary.openTasks}</span></button>
-        <button className={styles.browserItem} onClick={()=>filePicker.current?.click()}><Upload size={16}/> Add local reference</button>
-        <div className={styles.browserFoot}><span>SESSION / PROTOTYPE</span><p>Playlist arrangement is an editable plan. File sharing, real analysis and FL Studio remote control require connected services.</p><a href="/legacy">Open previous control room</a></div>
+        <button className={styles.browserItem} onClick={()=>{setRightPanel("copilot");setShowRight(true)}}><Bot size={16}/> AI assistant</button>
+        <button className={styles.browserItem} onClick={()=>{setRightPanel("collab");setShowRight(true)}}><MessageSquare size={16}/> Team tasks <span>{summary.openTasks}</span></button>
+        <button className={styles.browserItem} onClick={()=>filePicker.current?.click()}><Upload size={16}/> Add reference</button>
+        <div className={styles.browserFoot}><span>SESSION / PROTOTYPE</span><p>Playlist arrangement is an editable plan. File sharing, real analysis and FL Studio remote control require connected services.</p><a href="/legacy">See original layout</a></div>
       </aside>
 
       {mode === "studio" ? studioPane : mode === "assets" ? <section className={styles.fullPanel}>
@@ -507,7 +520,7 @@ export default function ProducerWorkspace() {
     </div>
 
     <input ref={filePicker} type="file" hidden multiple accept="audio/*,.wav,.mp3,.aiff,.flac,.mid,.midi,.flp,.zip,.json" onChange={importAssets} aria-label="Choose production files"/>
-    {!showRight&&<button className={styles.reopenRight} onClick={()=>setShowRight(true)}><Sparkles size={15}/> Show producer assistant</button>}
+    
     <footer className={styles.statusBar}><span><i/> Session ready</span><span>{status}</span><span>{session.bpm} BPM · {session.root} {session.mode} · 4/4</span></footer>
   </main>;
 }
