@@ -180,9 +180,9 @@ export default function FadrStemLab() {
           {file && <p>{file.name} · {(file.size / 1048576).toFixed(1)} MB</p>}
         </div></div>
         <div className={styles.step}><span>03</span><div><strong>Approve processing</strong>
-          <p>Fadr's published API charge is <b>US$0.05 per minute of input audio</b>. A Fadr Plus subscription and API balance are required. Upload only music you have rights to process.</p>
+          <p>Fadr&apos;s published API charge is <b>US$0.05 per minute of input audio</b>. A Fadr Plus subscription and API balance are required. Upload only music you have rights to process.</p>
           <label className={styles.consent}><input type="checkbox" checked={consent} onChange={event => setConsent(event.target.checked)} disabled={stage !== "idle"} />
-            I have permission to process this recording and approve Fadr's usage charges.</label>
+            I have permission to process this recording and approve Fadr&apos;s usage charges.</label>
           <button className={styles.primary} onClick={() => void processAudio()} disabled={!file || !configured || !consent || access.length < 8 || stage !== "idle"}>
             {stage === "uploading" || stage === "processing" ? <LoaderCircle size={16} className={styles.spinner}/> : <Sparkles size={16}/>}
             {stage === "uploading" ? "Uploading…" : stage === "processing" ? "Processing…" : stage === "complete" ? "Complete" : "Separate into stems"}</button>
