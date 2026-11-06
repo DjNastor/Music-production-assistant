@@ -166,7 +166,7 @@ export default function FadrStemLab() {
     <div className={styles.columns}>
       <div className={styles.left}>
         <div className={styles.step}><span>01</span><div><strong>Connect Fadr</strong>
-          {checking ? <p>Checking the service…</p> : configured ? <p className={styles.success}><CheckCircle2 size={14}/> Server integration configured</p>
+          {checking ? <p>Checking the service…</p> : configured ? <p className={styles.success}><CheckCircle2 size={14}/> Server credentials are present (connection not tested)</p>
             : <p className={styles.warning}>Not configured. The studio owner must set FADR_API_KEY and FADR_STUDIO_ACCESS_TOKEN on the hosting server.</p>}
           <label className={styles.access}><KeyRound size={15}/> Studio access code
             <input type="password" autoComplete="off" value={access} maxLength={256} onChange={event => setAccess(event.target.value)} placeholder="Private studio access code" />
