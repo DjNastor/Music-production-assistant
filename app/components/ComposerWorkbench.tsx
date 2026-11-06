@@ -112,6 +112,7 @@ export default function ComposerWorkbench({
   const oscillators = useRef<OscillatorNode[]>([]);
   const timers = useRef<{ interval: number | null; end: number | null }>({ interval: null, end: null });
 
+  const storageKey = SESSION_KEY + ":" + projectName;
   const scale = SCALES[scaleName];
   const keyLabel = ROOTS[root] + " " + scaleName;
   const fitness = useMemo(() => {
@@ -129,7 +130,7 @@ export default function ComposerWorkbench({
   useEffect(() => {
     const id = window.setTimeout(() => {
       try {
-        const saved = window.localStorage.getItem(SESSION_KEY);
+        const saved = window.localStorage.getItem(storageKey);
         if (saved) {
           const parsed = JSON.parse(saved) as { root?: number; scaleName?: ScaleName; bpm?: number; notes?: WorkbenchNote[] };
           if (typeof parsed.root === "number" && parsed.root >= 0 && parsed.root < 12) setRoot(parsed.root);
@@ -141,12 +142,12 @@ export default function ComposerWorkbench({
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(id);
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify({ root, scaleName, bpm, notes }));
-  }, [root, scaleName, bpm, notes, hydrated]);
+    window.localStorage.setItem(storageKey, JSON.stringify({ root, scaleName, bpm, notes }));
+  }, [root, scaleName, bpm, notes, hydrated, storageKey]);
 
   useEffect(() => () => {
     if (timers.current.interval !== null) window.clearInterval(timers.current.interval);
