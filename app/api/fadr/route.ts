@@ -28,7 +28,7 @@ function canAccess(request: NextRequest) {
 function isObject(value: unknown): value is ObjectValue {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
-function validName(input: unknown) {
+function validName(input: unknown): input is string {
   return typeof input === "string" && input.length > 0 && input.length <= 180 &&
     !/[\\/\r\n\x00-\x1f]/.test(input);
 }
