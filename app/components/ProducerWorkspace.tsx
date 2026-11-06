@@ -3,11 +3,11 @@
 import Image from "next/image";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Activity, AudioLines, Bot, Check, ChevronDown, ChevronLeft, ChevronRight,
-  CircleHelp, ClipboardList, Copy, Download, FileAudio, FileMusic, Folder,
-  FolderOpen, Headphones, Layers3, Library, Link2, ListMusic, Menu, MessageSquare,
-  Mic2, Minus, MoreHorizontal, Music2, Pause, Play, Plus, Save, Search, Send,
-  Settings2, SlidersHorizontal, Sparkles, Trash2, Upload, Users, WandSparkles, X,
+  Activity, AudioLines, Bot, Check, ChevronLeft, ChevronRight,
+  ClipboardList, Copy, Download, FileAudio, FileMusic, Folder,
+  FolderOpen, Headphones, Layers3, ListMusic, Menu, MessageSquare,
+  Music2, Pause, Play, Plus, Search, Send,
+  SlidersHorizontal, Sparkles, Trash2, Upload, Users, X,
 } from "lucide-react";
 import ComposerWorkbench from "./ComposerWorkbench";
 import styles from "./ProducerWorkspace.module.css";
