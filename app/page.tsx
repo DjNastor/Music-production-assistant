@@ -929,21 +929,37 @@ export default function StudioPage() {
         <div className="canvas-scroll">
           <div className="canvas-inner">
             {activeNav === "Studio" && (
-              <ComposerWorkbench key={project.title} projectName={project.title} onAsk={(prompt) => {
-                setInput(prompt);
-                setActiveNav("AI Assistant");
-                setToast("Gopher handoff opened in Copilot — copy it into FL Studio when ready");
-                if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true);
-              }} />
+              <>
+                <ComposerWorkbench key={project.title} projectName={project.title} onAsk={(prompt) => {
+                  setInput(prompt);
+                  setActiveNav("AI Assistant");
+                  setToast("Gopher handoff opened in Copilot — copy it into FL Studio when ready");
+                  if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true);
+                }} />
+                <PatternDesk onAsk={(prompt) => {
+                  setInput(prompt);
+                  setActiveNav("AI Assistant");
+                  setToast("Drum pattern notes loaded into Copilot");
+                  if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true);
+                }} />
+                <FLStudioHandoff onAsk={(prompt) => {
+                  setInput(prompt);
+                  setActiveNav("AI Assistant");
+                  setToast("FL Studio handoff loaded into Copilot");
+                  if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true);
+                }} />
+              </>
             )}
+            {activeNav !== "Studio" && (<>
             <SimpleHome project={project} activeNav={activeNav} onUpload={() => runQuickAction("Finish MP3 idea")} onReference={() => { setActiveNav("Reference"); setInput("Build a focused Afro House reference plan using my local library, Traxsource, Beatport and Splice. Keep it original and practical."); setToast("Reference plan loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onCopilot={() => { setActiveNav("AI Assistant"); setInput("What is the single best next production move for this project?"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} onExport={() => setExportOpen(true)} />
 
             <section className="queue simple-queue panel-shell" aria-labelledby="queue-title">
               <div className="section-heading compact"><div><span className="section-kicker">Queue</span><h2 id="queue-title">Recent jobs</h2></div><button className={`filter-button ${hideCompleted ? "active" : ""}`} aria-label={hideCompleted ? "Show completed tasks" : "Hide completed tasks"} aria-pressed={hideCompleted} onClick={() => setHideCompleted((value) => !value)}>{hideCompleted ? "ALL" : "ACTIVE"}</button></div>
               <div className="queue-list">{visibleQueue.slice(0, 3).map((task) => { const QueueIcon = task.status === "processing" ? Activity : task.status === "complete" ? Check : Clock3; const label = task.status === "processing" ? "Live" : task.status === "complete" ? "Done" : "Wait"; return <div className="queue-row" key={task.id}><span className={`queue-icon ${task.status}`}><QueueIcon size={16} /></span><span className="queue-copy"><strong>{task.title}</strong><small>{task.detail}</small></span><span className={`status-tag ${task.status}`}>{label}</span></div>; })}{!visibleQueue.length && <div className="queue-empty"><Check size={20} /><span>No active tasks.</span></div>}</div>
             </section>
+            </>)}
 
-            <details className="studio-tools">
+            {activeNav !== "Studio" && <details className="studio-tools">
               <summary>Show studio tools</summary>
               <div className="record-console clean-console">
                 <Arrangement project={project} playing={playing} progress={progress} onPlay={() => setPlaying((value) => !value)} selected={selectedSection} onSelect={selectSection} onOptions={() => setToast(`${selectedSection} controls selected`)} onReturn={() => selectProject("Find A Way")} />
@@ -951,7 +967,7 @@ export default function StudioPage() {
               </div>
               <FLStudioHandoff onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("FL Studio handoff loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
               <PatternDesk onAsk={(prompt) => { setInput(prompt); setActiveNav("AI Assistant"); setToast("Loaded into Copilot"); if (window.matchMedia("(max-width: 1160px)").matches) setMobileCopilot(true); }} />
-            </details>
+            </details>}
 
             <details className="deep-mode">
               <summary>Deep mode</summary>
