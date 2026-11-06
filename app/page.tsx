@@ -1,5 +1,5 @@
-import ProducerWorkspace from "./components/ProducerWorkspace";
+import ProducerDashboard from "./components/ProducerDashboard";
 
-export default function Page() {
-  return <ProducerWorkspace />;
+export default function HomePage() {
+  return <ProducerDashboard />;
 }
