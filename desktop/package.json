@@ -1,0 +1,31 @@
+{
+  "name": "nastor-ai-studio-desktop",
+  "version": "0.2.0",
+  "description": "Secure Windows companion for Nastor AI Studio",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "za.co.lukulu.nastorai",
+    "productName": "Nastor AI Studio",
+    "artifactName": "Nastor-AI-Studio-${version}-Windows-Setup.${ext}",
+    "directories": { "output": "dist" },
+    "files": ["main.cjs", "offline.html", "package.json"],
+    "asar": true,
+    "win": { "target": ["nsis"] },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

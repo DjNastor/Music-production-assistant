@@ -55,3 +55,9 @@ The live app is a frontend prototype. To make Nastor's production assistant actu
 - Keep originals untouched; generate new versions, notes or project packages.
 - Require review before expensive render jobs.
 - Track every generated file, prompt, setting and source under the project id.
+
+## Producer DAW Workbench (development branch)
+
+The `feat/producer-daw-workbench` branch introduces a production-focused DAW-like **Studio** workspace. Choose Studio in the left sidebar to edit and audition a four-bar piano-roll chord sketch, generate voicings, snap to key, import/export Standard MIDI files, save JSON templates, generate FL Studio Gopher handoff prompts and download Piano roll scale scripts.
+
+The workbench is browser-local and its harmony coach is rule-based. It does **not** yet analyze uploaded audio, control FL Studio, call Gopher directly, run a production AI model, or render full music mixes. See [the detailed producer architecture and implementation plan](docs/PRODUCER-WORKBENCH-PLAN.md). The pull request must pass code checks and review before it is merged and deployed.
