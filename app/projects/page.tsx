@@ -8,7 +8,7 @@ import {
   Plus, Sparkles, Trash2, Upload,
 } from "lucide-react";
 import {
-  buildFinishingTasks, coachingTips, completion, isFinishProject, listFinishProjects,
+  buildFinishingTasks, coachingTips, completion, listFinishProjects,
   nextTask, newId, PHASE_NAMES, PHASES, removeFinishProject, saveFinishProject,
   type FinishPhase, type FinishProject, type FinishStatus,
 } from "../lib/finish-projects";
@@ -65,9 +65,12 @@ export default function ProjectFinisherPage() {
   const uploadRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setItems(listFinishProjects());
-    setSessions(listProjects());
-    setReady(true);
+    const timer = window.setTimeout(() => {
+      setItems(listFinishProjects());
+      setSessions(listProjects());
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
   const selected = useMemo(() => items.find(item => item.id === selectedId) ?? null, [items, selectedId]);
   const shown = useMemo(() => items.filter(item => filter === "all" || item.status === filter), [items, filter]);
@@ -78,7 +81,6 @@ export default function ProjectFinisherPage() {
   useEffect(() => {
     let alive = true;
     let newObjectUrl: string | null = null;
-    setAudioUrl(null);
     if (selectedId) {
       getReferenceAudio(selectedId).then(audio => {
         if (alive && audio) {
@@ -123,6 +125,7 @@ export default function ProjectFinisherPage() {
       createdAt: now, updatedAt: now, tasks: buildFinishingTasks(phases),
     };
     if (!persist(project)) return;
+    setAudioUrl(null);
     setSelectedId(project.id);
     setNewOpen(false);
     setTitle(""); setDue(""); setNewNotes(""); setLinkedId("");
@@ -199,7 +202,7 @@ export default function ProjectFinisherPage() {
         <div>
           <span className={styles.eyebrow}><Sparkles size={14}/> TURN YOUR UNFINISHED SONGS INTO RELEASES</span>
           <h1>Finish what you <em>started.</em></h1>
-          <p>Register a track even if it isn't inside Nastor AI Studio. Tell us what is left - arrangement, mixing, mastering or delivery - and work through a clear finishing plan.</p>
+          <p>Register a track even if it is not inside Nastor AI Studio. Tell us what is left - arrangement, mixing, mastering or delivery - and work through a clear finishing plan.</p>
           <div className={styles.counters}>
             <span><strong>{items.length}</strong> tracked projects</span>
             <span><strong>{unfinishedCount}</strong> unfinished</span>
@@ -211,7 +214,7 @@ export default function ProjectFinisherPage() {
       </section>
 
       {newOpen && <section className={styles.newPanel} aria-label="Register an unfinished music project">
-        <div className={styles.sectionHeader}><div><span className={styles.eyebrow}>NEW / UPCOMING</span><h2>Tell the studio what you're working on</h2></div></div>
+        <div className={styles.sectionHeader}><div><span className={styles.eyebrow}>NEW / UPCOMING</span><h2>Tell the studio what you are working on</h2></div></div>
         <form onSubmit={addProject} className={styles.newForm}>
           <label>Project or song title<input value={title} onChange={e => setTitle(e.target.value)} required maxLength={100} placeholder="e.g. New Afro House single"/></label>
           <div className={styles.formColumns}>
@@ -241,7 +244,7 @@ export default function ProjectFinisherPage() {
           <div className={styles.records}>
             {ready && shown.length ? shown.map(project => {
               const percent = completion(project);
-              return <button key={project.id} className={selectedId === project.id ? styles.selectedCard : styles.recordCard} onClick={() => setSelectedId(project.id)}>
+              return <button key={project.id} className={selectedId === project.id ? styles.selectedCard : styles.recordCard} onClick={() => { setAudioUrl(null); setSelectedId(project.id); }}>
                 <span className={styles.recordTop}><span className={styles.recordKind}>{project.kind}</span><span className={styles.recordStatus} data-status={project.status}>{statusLabels[project.status]}</span></span>
                 <strong>{project.title}</strong>
                 <span className={styles.nextStep}>{nextTask(project)?.label ?? "Checklist complete - ready for review"}</span>
@@ -297,7 +300,7 @@ export default function ProjectFinisherPage() {
               </div>
               {selected.audioName && <p><FileAudio size={15}/>{selected.audioName}</p>}
               {audioUrl && <audio controls preload="none" src={audioUrl} aria-label="Project reference audio"/>}
-              <small>WAV, MP3, M4A or OGG, maximum 30 MB. This stores a playable copy in this browser's IndexedDB, not in cloud storage or Fadr.</small>
+              <small>WAV, MP3, M4A or OGG, maximum 30 MB. This stores a playable copy in this browser IndexedDB, not in cloud storage or Fadr.</small>
             </section>
             <section className={styles.notesSection}>
               <h3>Project notes</h3>
