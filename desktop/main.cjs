@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
 
 const { app, BrowserWindow, shell, session } = require("electron");
@@ -11,7 +12,6 @@ if (STUDIO.protocol !== "https:" || STUDIO.username || STUDIO.password) {
   throw new Error("NASTOR_STUDIO_URL must be an HTTPS origin without credentials.");
 }
 const TRUSTED_ORIGIN = STUDIO.origin;
-let mainWindow;
 
 function isTrusted(candidate) {
   try {
@@ -53,7 +53,6 @@ function createWindow() {
       webviewTag: false,
     },
   });
-  mainWindow = win;
   win.once("ready-to-show", () => win.show());
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (isTrusted(url)) void win.loadURL(url);
