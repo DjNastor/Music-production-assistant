@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Check, Clock3, CloudOff, Download, FileAudio, FolderOpen,
-  Headphones, Layers3, Music2, Plus, Sparkles, Upload, Users,
+  Headphones, Layers3, Music2, Plus, Sparkles, Upload, Users, ClipboardCheck,
 } from "lucide-react";
 import {
   activateProject, getCurrentSession, isSession, listProjects, makeBlankSession,
@@ -127,6 +127,7 @@ export default function ProducerDashboard() {
         <Link href="/studio">Studio</Link>
         <Link href="/studio?view=assets">Sounds</Link>
         <Link href="/studio?view=collab">Collaboration</Link>
+        <Link href="/projects">Project Finisher</Link>
       </nav>
       <Link className={styles.openStudio} href="/studio"><Headphones size={16}/> Open studio <ArrowRight size={14}/></Link>
     </header>
@@ -166,6 +167,7 @@ export default function ProducerDashboard() {
           <button onClick={() => navigateToStudio()}><span className={styles.actionIcon}><Music2/></span><strong>Make music</strong><small>Beats, chords, piano roll and arrangement</small><ArrowRight size={16}/></button>
           <button onClick={() => navigateToStudio("assets")}><span className={styles.actionIcon}><FileAudio/></span><strong>My sounds</strong><small>Choose and audition your own references</small><ArrowRight size={16}/></button>
           <button onClick={() => navigateToStudio("collab")}><span className={styles.actionIcon}><Users/></span><strong>Collaborate</strong><small>Producer tasks, invite drafts and handoffs</small><ArrowRight size={16}/></button>
+          <button onClick={() => window.location.assign("/projects")}><span className={styles.actionIcon}><ClipboardCheck/></span><strong>Finish my songs</strong><small>Track unfinished projects, progress and next steps</small><ArrowRight size={16}/></button>
         </div>
       </section>
 
