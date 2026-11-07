@@ -1,0 +1,24 @@
+{
+  "name": "nastor-ai-studio-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Online Windows desktop companion for Nastor AI Studio",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "package:win": "electron-builder --win nsis portable --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "za.co.lukulu.nastoraistudio",
+    "productName": "Nastor AI Studio",
+    "directories": { "output": "dist" },
+    "files": ["main.cjs", "offline.html", "package.json"],
+    "win": { "target": ["nsis", "portable"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "publish": null
+  }
+}
