@@ -13,6 +13,11 @@ import {
 } from "../lib/producer-projects";
 import styles from "./ProducerDashboard.module.css";
 
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
+
 function downloadManifest(data: object, name: string) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const href = URL.createObjectURL(blob);
@@ -39,6 +44,7 @@ export default function ProducerDashboard() {
   const [ready, setReady] = useState(false);
   const [title, setTitle] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [installRequest, setInstallRequest] = useState<InstallPromptEvent | null>(null);
   const [notice, setNotice] = useState("Your songs and collaboration drafts stay on this device unless you export them.");
   const importRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -49,6 +55,27 @@ export default function ProducerDashboard() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    const onInstall = (event: Event) => {
+      event.preventDefault();
+      setInstallRequest(event as InstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", onInstall);
+    return () => window.removeEventListener("beforeinstallprompt", onInstall);
+  }, []);
+  async function installApp() {
+    if (!installRequest) return;
+    try {
+      await installRequest.prompt();
+      const choice = await installRequest.userChoice;
+      setNotice(choice.outcome === "accepted"
+        ? "Install accepted. Your device will complete installation."
+        : "Installation dismissed. You can install later from your browser menu.");
+      setInstallRequest(null);
+    } catch {
+      setNotice("Installation is unavailable here. Try your browser's Install App menu.");
+    }
+  }
   function startNew() {
     const next = makeBlankSession(title);
     if (!rememberProject(next)) {
@@ -113,6 +140,7 @@ export default function ProducerDashboard() {
           <div className={styles.heroActions}>
             <button className={styles.cta} onClick={() => setShowNew((v) => !v)}><Plus size={18}/> New production</button>
             <button onClick={() => navigateToStudio()}><Layers3 size={17}/> {current ? "Continue session" : "Open studio"}</button>
+            {installRequest && <button onClick={() => void installApp()}><Download size={17}/> Install app</button>}
           </div>
           <p className={styles.localNote}><CloudOff size={13}/> Local beta — no cloud account or FL Studio sync connected</p>
         </div>
