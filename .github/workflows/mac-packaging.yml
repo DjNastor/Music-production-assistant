@@ -1,0 +1,47 @@
+name: Mac portable installer (Catalina beta)
+
+on:
+  push:
+    branches: [feat/native-installers-beta]
+    paths:
+      - "packaging/mac/**"
+      - ".github/workflows/mac-packaging.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-mac:
+    name: Intel Mac portable ZIP + DMG (unsigned legacy beta)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install macOS packaging dependencies
+        working-directory: packaging/mac
+        run: npm install --no-audit --no-fund
+      - name: Build Intel ZIP and DMG
+        working-directory: packaging/mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          CSC_FOR_PULL_REQUEST: "false"
+        run: npm run package:mac
+      - name: Show generated files
+        shell: bash
+        run: |
+          ls -lah packaging/mac/dist
+          test -n "$(find packaging/mac/dist -maxdepth 1 -name '*.zip' -print -quit)"
+          test -n "$(find packaging/mac/dist -maxdepth 1 -name '*.dmg' -print -quit)"
+      - name: Upload Intel macOS beta
+        uses: actions/upload-artifact@v4
+        with:
+          name: nastor-mac-catalina-portable-beta
+          path: |
+            packaging/mac/dist/*.zip
+            packaging/mac/dist/*.dmg
+          if-no-files-found: error
+          retention-days: 14
