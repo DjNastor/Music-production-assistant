@@ -15,7 +15,7 @@
   "build": {
     "appId": "za.co.lukulu.nastoraistudio.mac",
     "productName": "Nastor AI Studio",
-    "artifactName": "Nastor-AI-Studio-Mac-Catalina-0.1.0-x64.\${ext}",
+    "artifactName": "Nastor-AI-Studio-Mac-Catalina-0.1.0-x64.${ext}",
     "directories": { "output": "dist" },
     "files": ["main.cjs", "offline.html", "package.json"],
     "mac": {
