@@ -18,6 +18,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 /**
  * Android beta: secure browser shell for the hosted Nastor AI Studio.
@@ -39,7 +41,20 @@ public final class MainActivity extends Activity {
 
         studio = new WebView(this);
         studio.setBackgroundColor(Color.rgb(13, 14, 16));
-        setContentView(studio);
+        LinearLayout shell = new LinearLayout(this);
+        shell.setOrientation(LinearLayout.VERTICAL);
+        shell.setBackgroundColor(Color.rgb(13, 14, 16));
+        Button automation = new Button(this);
+        automation.setText("Automation Centre");
+        automation.setAllCaps(false);
+        automation.setTextColor(Color.rgb(232, 188, 116));
+        automation.setBackgroundColor(Color.rgb(28, 30, 33));
+        automation.setOnClickListener(view -> TaskerAutomation.show(this));
+        shell.addView(automation, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        shell.addView(studio, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+        setContentView(shell);
         WebView.setWebContentsDebuggingEnabled(false);
 
         WebSettings settings = studio.getSettings();
