@@ -128,6 +128,7 @@ export default function ProducerDashboard() {
         <Link href="/studio?view=assets">Sounds</Link>
         <Link href="/studio?view=collab">Collaboration</Link>
         <Link href="/projects">Project Finisher</Link>
+        <Link href="/workspace">Master Workspace</Link>
       </nav>
       <Link className={styles.openStudio} href="/studio"><Headphones size={16}/> Open studio <ArrowRight size={14}/></Link>
     </header>
@@ -143,6 +144,7 @@ export default function ProducerDashboard() {
             <button onClick={() => navigateToStudio()}><Layers3 size={17}/> {current ? "Continue session" : "Open studio"}</button>
             {installRequest && <button onClick={() => void installApp()}><Download size={17}/> Install app</button>}
           </div>
+          <Link href="/workspace" className={styles.openStudio}>Master Workspace <ArrowRight size={14}/></Link>
           <p className={styles.localNote}><CloudOff size={13}/> Local beta — no cloud account or FL Studio sync connected</p>
         </div>
         <div className={styles.heroArtwork} aria-hidden="true">
