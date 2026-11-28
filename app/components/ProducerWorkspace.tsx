@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FadrStemLab from "./FadrStemLab";
 import { rememberProject } from "../lib/producer-projects";
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity, AudioLines, Bot, Check, ChevronLeft, ChevronRight,
   ClipboardList, Copy, Download, FileAudio, FileMusic, Folder,
@@ -106,6 +106,150 @@ function sayPrompt(task: string, session: WorkspaceState, selected?: Clip) {
   return info + " " + (options[task] ?? task) + safety;
 }
 
+
+type MutableCell<T> = { current: T };
+type PatternUpdate = boolean[][] | ((current: boolean[][]) => boolean[][]);
+
+function updateArrangementBar(
+  bar: number,
+  timelineRef: MutableCell<HTMLDivElement | null>,
+  counterRef: MutableCell<HTMLSpanElement | null>,
+  currentBarRef: MutableCell<number>,
+) {
+  const next = Math.max(1, Math.min(32, Math.round(bar)));
+  currentBarRef.current = next;
+  timelineRef.current?.querySelectorAll<HTMLElement>("[data-playhead]").forEach((node) => {
+    node.style.gridColumn = String(next);
+  });
+  if (counterRef.current) {
+    counterRef.current.textContent = "BAR " + String(next).padStart(2, "0") + " / 32";
+  }
+}
+
+type ArrangementTransportProps = {
+  bpm: number;
+  timelineRef: MutableCell<HTMLDivElement | null>;
+  counterRef: MutableCell<HTMLSpanElement | null>;
+  currentBarRef: MutableCell<number>;
+};
+
+const ArrangementTransport = memo(function ArrangementTransport({
+  bpm, timelineRef, counterRef, currentBarRef,
+}: ArrangementTransportProps) {
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => {
+      const next = currentBarRef.current >= 32 ? 1 : currentBarRef.current + 1;
+      updateArrangementBar(next, timelineRef, counterRef, currentBarRef);
+    }, (60000 / bpm) * 4);
+    return () => window.clearInterval(timer);
+  }, [playing, bpm, timelineRef, counterRef, currentBarRef]);
+
+  function returnToStart() {
+    setPlaying(false);
+    updateArrangementBar(1, timelineRef, counterRef, currentBarRef);
+  }
+
+  return <div className={styles.transportControls}>
+    <button title="Return to bar one" aria-label="Go to start" onClick={returnToStart}><ChevronLeft size={16}/></button>
+    <button className={styles.transportPlay} aria-pressed={playing} onClick={() => setPlaying((current) => !current)}>
+      {playing ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}
+      {playing ? "Pause" : "Scan bars"}
+    </button>
+    <span className={styles.barCounter} ref={counterRef}>BAR {String(currentBarRef.current).padStart(2, "0")} / 32</span>
+  </div>;
+});
+
+type DrumPatternEditorProps = {
+  bpm: number;
+  patternRef: MutableCell<boolean[][]>;
+  onStatus: (message: string) => void;
+};
+
+const DrumPatternEditor = memo(function DrumPatternEditor({
+  bpm, patternRef, onStatus,
+}: DrumPatternEditorProps) {
+  const [pattern, setPattern] = useState<boolean[][]>(() => patternRef.current.map((row) => [...row]));
+  const [playing, setPlaying] = useState(false);
+  const [step, setStep] = useState(-1);
+  const audioRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => { patternRef.current = pattern; }, [pattern, patternRef]);
+  useEffect(() => {
+    if (!playing) {
+      setStep(-1);
+      return;
+    }
+    let count = 0;
+    const context = audioRef.current ?? new AudioContext();
+    audioRef.current = context;
+    void context.resume();
+
+    function tick() {
+      setStep(count);
+      const when = context.currentTime;
+      pattern.forEach((row, channel) => {
+        if (!row[count]) return;
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        const freqs = [105, 230, 480, 320, 68];
+        osc.type = channel === 0 || channel === 4 ? "sine" : channel === 2 ? "sawtooth" : "triangle";
+        osc.frequency.setValueAtTime(freqs[channel], when);
+        if (channel === 0 || channel === 4) osc.frequency.exponentialRampToValueAtTime(freqs[channel] / 2, when + .11);
+        gain.gain.setValueAtTime(channel === 2 ? .013 : .07, when);
+        gain.gain.exponentialRampToValueAtTime(.0001, when + (channel === 4 ? .24 : .12));
+        osc.connect(gain).connect(context.destination);
+        osc.start(when);
+        osc.stop(when + .28);
+      });
+      count = (count + 1) % 16;
+    }
+
+    tick();
+    const timer = window.setInterval(tick, 60000 / bpm / 4);
+    return () => window.clearInterval(timer);
+  }, [playing, pattern, bpm]);
+
+  useEffect(() => () => {
+    if (audioRef.current) void audioRef.current.close();
+  }, []);
+
+  function changePattern(change: PatternUpdate) {
+    setPattern((current) => typeof change === "function" ? change(current) : change);
+  }
+
+  return <div className={styles.editorBody}>
+    <div className={styles.editorIntro}><strong>Pattern 01 · Afro House sketch</strong><span>Synthesized preview, not a rendered WAV or sample player</span></div>
+    <div className={styles.drumToolbar}>
+      <button aria-pressed={playing} onClick={() => setPlaying((current) => !current)}>
+        {playing ? <Pause size={15}/> : <Play size={15}/>} {playing ? "Stop pattern" : "Preview pattern"}
+      </button>
+      <button onClick={() => changePattern(initialDrums.map((row) => [...row]))}>Reset</button>
+      <button onClick={() => {
+        changePattern((current) => current.map((row, index) => row.map((value, tick) =>
+          index === 0 ? tick % 4 === 0 : value || (index > 1 && (tick + index) % 7 === 0)
+        )));
+        onStatus("Generated a simple additional pattern variation.");
+      }}><Sparkles size={15}/> Variation</button>
+      <span>1 bar / 16 steps</span>
+    </div>
+    <div className={styles.drumGrid}>
+      {DRUMS.map((name, channel) => <div key={name} className={styles.drumRow}>
+        <strong>{name}</strong>
+        {STEPS.map((tick) => <button key={tick} aria-label={name + " step " + (tick + 1)} aria-pressed={pattern[channel][tick]}
+          className={[styles.drumStep, pattern[channel][tick] ? styles.drumOn : "", step === tick ? styles.drumCurrent : ""].join(" ")}
+          style={{ ["--hit-color" as string]: CHANNEL_COLORS[channel] }}
+          onClick={() => changePattern((current) => current.map((row, index) =>
+            index !== channel ? row : row.map((value, position) => position === tick ? !value : value)
+          ))}/>)}
+      </div>)}
+    </div>
+    <div className={styles.editorHint}>Tap steps to program a groove. This original prototype uses browser synthesis; user-uploaded sample playback is a future milestone.</div>
+  </div>;
+});
+
 export default function ProducerWorkspace() {
   const [session, setSession] = useState<WorkspaceState>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
@@ -124,16 +268,12 @@ export default function ProducerWorkspace() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const liveAssetsRef = useRef<Asset[]>([]);
   const [activeAsset, setActiveAsset] = useState<string | null>(null);
-  const [pattern, setPattern] = useState<boolean[][]>(initialDrums);
-  const [drumPlaying, setDrumPlaying] = useState(false);
-  const [drumStep, setDrumStep] = useState(-1);
-  const [arrangePlaying, setArrangePlaying] = useState(false);
-  const [barPlayhead, setBarPlayhead] = useState(1);
+  const patternRef = useRef<boolean[][]>(initialDrums.map((row) => [...row]));
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const barCounterRef = useRef<HTMLSpanElement | null>(null);
+  const currentBarRef = useRef(1);
   const [mixerInspect, setMixerInspect] = useState<Lane>("Drums");
   const filePicker = useRef<HTMLInputElement>(null);
-  const audioRef = useRef<AudioContext | null>(null);
-  const transportTimer = useRef<number | null>(null);
-  const drumTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const hydration = window.setTimeout(() => {
@@ -156,48 +296,6 @@ export default function ProducerWorkspace() {
     if (hydrated) rememberProject(session);
   }, [session, hydrated]);
 
-  useEffect(() => {
-    if (!arrangePlaying) return;
-    transportTimer.current = window.setInterval(() => {
-      setBarPlayhead((bar) => bar >= 32 ? 1 : bar + 1);
-    }, (60000 / session.bpm) * 4);
-    return () => {
-      if (transportTimer.current !== null) window.clearInterval(transportTimer.current);
-      transportTimer.current = null;
-    };
-  }, [arrangePlaying, session.bpm]);
-  useEffect(() => {
-    if (!drumPlaying) return;
-    let count = 0;
-    const context = audioRef.current ?? new AudioContext();
-    audioRef.current = context;
-    void context.resume();
-    function tick() {
-      setDrumStep(count);
-      const when = context.currentTime;
-      pattern.forEach((row, channel) => {
-        if (!row[count]) return;
-        const osc = context.createOscillator();
-        const gain = context.createGain();
-        const freqs = [105, 230, 480, 320, 68];
-        osc.type = channel === 0 || channel === 4 ? "sine" : channel === 2 ? "sawtooth" : "triangle";
-        osc.frequency.setValueAtTime(freqs[channel], when);
-        if (channel === 0 || channel === 4) osc.frequency.exponentialRampToValueAtTime(freqs[channel] / 2, when + .11);
-        gain.gain.setValueAtTime(channel === 2 ? .013 : .07, when);
-        gain.gain.exponentialRampToValueAtTime(.0001, when + (channel === 4 ? .24 : .12));
-        osc.connect(gain).connect(context.destination);
-        osc.start(when);
-        osc.stop(when + .28);
-      });
-      count = (count + 1) % 16;
-    }
-    tick();
-    drumTimer.current = window.setInterval(tick, 60000 / session.bpm / 4);
-    return () => {
-      if (drumTimer.current !== null) window.clearInterval(drumTimer.current);
-      drumTimer.current = null;
-    };
-  }, [drumPlaying, pattern, session.bpm]);
   useEffect(() => { liveAssetsRef.current = assets; }, [assets]);
   useEffect(() => () => {
     if (audioRef.current) void audioRef.current.close();
@@ -287,7 +385,7 @@ export default function ProducerWorkspace() {
     const content = {
       product: "Nastor AI Studio", schemaVersion: 1,
       exportedAt: new Date().toISOString(), status: "Local planning data; not an FLP or audio render",
-      project: session, pattern, assetManifest: assets.map(({ name, size, type }) => ({ name, size, type })),
+      project: session, pattern: patternRef.current, assetManifest: assets.map(({ name, size, type }) => ({ name, size, type })),
       caveats: ["Audio assets are not embedded", "Invites are drafts only", "Mixer faders are planning data, not DSP processing"],
     };
     downloadText("nastor-" + session.sessionName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-handoff.json", JSON.stringify(content, null, 2));
@@ -350,11 +448,11 @@ export default function ProducerWorkspace() {
           </div>
         </div>
         <div className={styles.timelineScroll}>
-          <div className={styles.timelineGrid}>
+          <div className={styles.timelineGrid} ref={timelineRef}>
             <div className={styles.ruler}><span className={styles.rulerStart}>TRACKS</span>{BARS.map((bar) => <span className={bar % 8 === 1 ? styles.barMajor : ""} key={bar}>{bar % 4 === 1 ? bar : "·"}</span>)}</div>
             <div className={styles.markers}>
               <div className={styles.markerHeading}>Sections</div>
-              {SECTIONS.map((name, i) => <button key={name} className={styles.section} style={{ gridColumn: `${i * 8 + 2} / span 8` }} onClick={() => { setBarPlayhead(i * 8 + 1); setStatus("Selected " + name + " at bar " + (i * 8 + 1)); }}>{name}</button>)}
+              {SECTIONS.map((name, i) => <button key={name} className={styles.section} style={{ gridColumn: `${i * 8 + 2} / span 8` }} onClick={() => { updateArrangementBar(i * 8 + 1, timelineRef, barCounterRef, currentBarRef); setStatus("Selected " + name + " at bar " + (i * 8 + 1)); }}>{name}</button>)}
             </div>
             {LANES.map(({ name, color, icon }) => (
               <div className={styles.trackRow} key={name}>
@@ -372,7 +470,7 @@ export default function ProducerWorkspace() {
                       onClick={() => setSelectedClipId(clip.id)} title={clip.name + " — bar " + clip.start}
                       aria-label={"Select " + clip.name + " bar " + clip.start}><span>{clip.name}</span></button>
                   ))}
-                  {barPlayhead > 0 && <i className={styles.playhead} style={{ gridColumn: String(barPlayhead), pointerEvents: "none" }} />}
+                  <i data-playhead className={styles.playhead} style={{ gridColumn: "1", pointerEvents: "none" }} />
                 </div>
               </div>
             ))}
@@ -394,23 +492,7 @@ export default function ProducerWorkspace() {
           <button role="tab" aria-selected={panel === "piano"} className={panel === "piano" ? styles.activeEditorTab : ""} onClick={() => setPanel("piano")}><Music2 size={15}/> Piano roll</button>
           <button role="tab" aria-selected={panel === "mixer"} className={panel === "mixer" ? styles.activeEditorTab : ""} onClick={() => setPanel("mixer")}><SlidersHorizontal size={15}/> Mix plan</button>
         </div>
-        {panel === "channel" && <div className={styles.editorBody}>
-          <div className={styles.editorIntro}><strong>Pattern 01 · Afro House sketch</strong><span>Synthesized preview, not a rendered WAV or sample player</span></div>
-          <div className={styles.drumToolbar}><button onClick={() => setDrumPlaying((p) => !p)}>{drumPlaying ? <Pause size={15}/> : <Play size={15}/>} {drumPlaying ? "Stop pattern" : "Preview pattern"}</button>
-            <button onClick={() => setPattern(initialDrums)}>Reset</button><button onClick={() => {setPattern((p) => p.map((row, i) => row.map((v, step) => i === 0 ? step % 4 === 0 : v || (i > 1 && (step + i) % 7 === 0)))); setStatus("Generated a simple additional pattern variation.");}}><Sparkles size={15}/> Variation</button>
-            <span>1 bar / 16 steps</span>
-          </div>
-          <div className={styles.drumGrid}>
-            {DRUMS.map((name, channel) => <div key={name} className={styles.drumRow}>
-              <strong>{name}</strong>
-              {STEPS.map((step) => <button key={step} aria-label={name + " step " + (step + 1)} aria-pressed={pattern[channel][step]}
-                className={[styles.drumStep, pattern[channel][step] ? styles.drumOn : "", drumStep === step ? styles.drumCurrent : ""].join(" ")}
-                style={{ ["--hit-color" as string]: CHANNEL_COLORS[channel] }}
-                onClick={() => setPattern((p) => p.map((row, idx) => idx !== channel ? row : row.map((value, index) => index === step ? !value : value)))}/>)}
-            </div>)}
-          </div>
-          <div className={styles.editorHint}>Tap steps to program a groove. This original prototype uses browser synthesis; user-uploaded sample playback is a future milestone.</div>
-        </div>}
+        {panel === "channel" && <DrumPatternEditor bpm={session.bpm} patternRef={patternRef} onStatus={setStatus} />}
         {panel === "piano" && <div className={styles.pianoWrapper}><ComposerWorkbench key={session.sessionName} projectName={session.sessionName} onAsk={(text) => { void copyText(text, "Handoff instructions copied for FL Studio"); setStatus("Gopher handoff generated. Copy and paste into FL Studio's Gopher panel."); }} /></div>}
         {panel === "mixer" && <div className={styles.editorBody}>
           <div className={styles.editorIntro}><strong>Mixer planning console</strong><span>Faders are saved as project planning metadata — no live DSP connection</span></div>
@@ -453,11 +535,7 @@ export default function ProducerWorkspace() {
     <div className={styles.transport}>
       <button className={styles.mobileMenu} aria-label={mobileBrowser ? "Close browser" : "Open browser"} onClick={() => setMobileBrowser(!mobileBrowser)}><Menu size={19}/></button>
       <label className={styles.projectTitle}>PROJECT <input aria-label="Project name" value={session.sessionName} onChange={(event) => chooseProject(event.target.value)} maxLength={90}/></label>
-      <div className={styles.transportControls}>
-        <button title="Return to bar one" aria-label="Go to start" onClick={() => {setBarPlayhead(1);setArrangePlaying(false);}}><ChevronLeft size={16}/></button>
-        <button className={styles.transportPlay} onClick={() => setArrangePlaying(!arrangePlaying)}>{arrangePlaying ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}{arrangePlaying ? "Pause" : "Scan bars"}</button>
-        <span className={styles.barCounter}>BAR {String(barPlayhead).padStart(2,"0")} / 32</span>
-      </div>
+      <ArrangementTransport bpm={session.bpm} timelineRef={timelineRef} counterRef={barCounterRef} currentBarRef={currentBarRef} />
       <label>BPM <input aria-label="Session tempo" type="number" min="50" max="220" value={session.bpm} onChange={e=>updateSession({bpm:Math.max(50,Math.min(220,Number(e.target.value)||120))})}/></label>
       <label>KEY <select aria-label="Session key" value={session.root} onChange={e=>updateSession({root:e.target.value})}>{KEY_NAMES.map(key=><option key={key}>{key}</option>)}</select></label>
       <label>MODE <select aria-label="Session scale mode" value={session.mode} onChange={e=>updateSession({mode:e.target.value})}><option value="minor">minor</option><option value="major">major</option><option value="dorian">dorian</option></select></label>
