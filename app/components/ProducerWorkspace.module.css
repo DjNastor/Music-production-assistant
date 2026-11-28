@@ -35,3 +35,106 @@
 .focusCopy{min-width:0}
 .focusArtwork{width:76px;height:76px;flex:0 0 76px;object-fit:cover;border-radius:12px;border:1px solid rgba(244,203,132,.33);box-shadow:0 10px 22px rgba(0,0,0,.28)}
 @media(max-width:700px){.focusIntro{gap:12px}.focusArtwork{width:58px;height:58px;flex-basis:58px}.focusIntro h1{font-size:21px}.focusIntro p{font-size:11px}}
+
+/* Adaptive UI pass — phone/local */
+.shell { min-height: 100dvh; }
+.timelineScroll, .mixerGrid, .editorTabs, .headerActions, .mainNav {
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 700px) {
+  .shell {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .topBar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding-left: max(9px, env(safe-area-inset-left));
+    padding-right: max(9px, env(safe-area-inset-right));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .headerActions {
+    order: 4;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .headerActions::-webkit-scrollbar,
+  .mainNav::-webkit-scrollbar,
+  .editorTabs::-webkit-scrollbar { display: none; }
+  .mainNav {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .mainNav button,
+  .shell .headerActions button,
+  .shell button,
+  .shell input,
+  .shell select {
+    min-height: 44px;
+  }
+  .transport {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .transport .projectTitle {
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr);
+    align-items: center;
+    gap: 7px;
+  }
+  .transport .projectTitle input { width: 100%; max-width: none; min-width: 0; }
+  .transportControls { width: 100%; overflow-x: auto; padding-bottom: 2px; }
+  .transportControls button { flex: 0 0 auto; }
+  .centerArea { width: 100%; max-width: 100vw; overflow: hidden; }
+  .timelineScroll {
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
+  }
+  .timelineGrid { min-width: 820px; }
+  .clipToolbar { align-items: stretch; }
+  .clipToolbar button { min-height: 40px; }
+  .editorTabs { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .shell .editorTabs button { min-width: max-content; min-height: 44px; }
+  .drumGrid, .mixerGrid { overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
+  .drumRow { min-width: 690px; }
+  .mixerStrip, .selectedMixer { flex: 0 0 104px; min-width: 104px; }
+  .rightRail { width: 100%; }
+  .rightTabs { position: sticky; top: 0; z-index: 4; }
+  .railBody { max-width: 100%; overflow: hidden; }
+  .promptBuilder textarea { min-height: 110px; }
+  .fullPanel { margin-left: 6px; margin-right: 6px; }
+  .assetSearch, .assetList, .assetPreview { margin-left: 10px; margin-right: 10px; max-width: none; }
+  .collabCard .taskForm { flex-direction: column; }
+  .statusBar {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-bottom: max(9px, env(safe-area-inset-bottom));
+  }
+  .reopenRight {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 430px) {
+  .brand small { display: none; }
+  .brand strong { font-size: 11px; }
+  .focusIntro { align-items: flex-start; }
+  .focusActions { grid-template-columns: 1fr; }
+  .shell .focusActions button:last-child { grid-column: auto; }
+  .transportControls { gap: 4px; }
+  .shell .transportPlay { min-width: 84px; }
+  .timelineGrid { min-width: 760px; }
+  .panelHeading { align-items: flex-start; }
+  .inlineActions { flex-wrap: wrap; justify-content: flex-end; }
+}
