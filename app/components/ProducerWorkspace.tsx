@@ -298,7 +298,6 @@ export default function ProducerWorkspace() {
 
   useEffect(() => { liveAssetsRef.current = assets; }, [assets]);
   useEffect(() => () => {
-    if (audioRef.current) void audioRef.current.close();
     for (const asset of liveAssetsRef.current) if (asset.url) URL.revokeObjectURL(asset.url);
   }, []); // File URLs are also released by the remove-asset action.
 
