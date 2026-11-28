@@ -158,7 +158,7 @@ const ArrangementTransport = memo(function ArrangementTransport({
       {playing ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}
       {playing ? "Pause" : "Scan bars"}
     </button>
-    <span className={styles.barCounter} ref={counterRef}>BAR {String(currentBarRef.current).padStart(2, "0")} / 32</span>
+    <span className={styles.barCounter} ref={counterRef}>BAR 01 / 32</span>
   </div>;
 });
 
@@ -171,17 +171,14 @@ type DrumPatternEditorProps = {
 const DrumPatternEditor = memo(function DrumPatternEditor({
   bpm, patternRef, onStatus,
 }: DrumPatternEditorProps) {
-  const [pattern, setPattern] = useState<boolean[][]>(() => patternRef.current.map((row) => [...row]));
+  const [pattern, setPattern] = useState<boolean[][]>(() => initialDrums.map((row) => [...row]));
   const [playing, setPlaying] = useState(false);
   const [step, setStep] = useState(-1);
   const audioRef = useRef<AudioContext | null>(null);
 
   useEffect(() => { patternRef.current = pattern; }, [pattern, patternRef]);
   useEffect(() => {
-    if (!playing) {
-      setStep(-1);
-      return;
-    }
+    if (!playing) return;
     let count = 0;
     const context = audioRef.current ?? new AudioContext();
     audioRef.current = context;
@@ -223,7 +220,7 @@ const DrumPatternEditor = memo(function DrumPatternEditor({
   return <div className={styles.editorBody}>
     <div className={styles.editorIntro}><strong>Pattern 01 · Afro House sketch</strong><span>Synthesized preview, not a rendered WAV or sample player</span></div>
     <div className={styles.drumToolbar}>
-      <button aria-pressed={playing} onClick={() => setPlaying((current) => !current)}>
+      <button aria-pressed={playing} onClick={() => { if (playing) setStep(-1); setPlaying(!playing); }}>
         {playing ? <Pause size={15}/> : <Play size={15}/>} {playing ? "Stop pattern" : "Preview pattern"}
       </button>
       <button onClick={() => changePattern(initialDrums.map((row) => [...row]))}>Reset</button>
