@@ -1,13 +1,27 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Nastor AI Studio",
-  description: "An AI-powered music production workspace.",
+  applicationName: "Nastor AI Studio",
+  description: "Music production, sample references, and producer project handoffs.",
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/brand/nastor-copilot-mark.svg",
-    apple: "/brand/nastor-waveform-mark.svg",
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Nastor Studio",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0D0E10",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
